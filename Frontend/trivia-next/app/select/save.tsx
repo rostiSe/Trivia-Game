@@ -5,7 +5,16 @@ import { Button } from '@/components/ui/button'
 import { SaveIcon } from 'lucide-react'
 import React, { useState } from 'react'
 
-export default function SaveEl({questions}:{questions: any}) {
+interface Question {
+  id: number;
+  question: string;
+  correct_answer: string;
+  incorrect_answers: string[];
+  // any other fields
+}
+
+
+export default function SaveEl({questions}:{questions: Question[]}) {
   const [savedQuestion, setSavedQuestion] = useState(false)
   const [error, setError] = useState(false)
     async function saveQuestionToDatabae(){

@@ -8,9 +8,7 @@ import { useGameContext } from '@/lib/GameContext.';
 import { Alert } from '@/components/ui/alert';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-interface SelectionScreenProps {
-  onStartGame: () => void;
-}
+
 interface Category {
   id: string;
   name: string;
@@ -82,7 +80,9 @@ const SelectionScreen = () => {
       localStorage.setItem('Quiz-Options', JSON.stringify(selectedFields));
       router.push('/quiz')
 
-    } 
+    }else{
+      setError(true)
+    }
   };
 
   const variation ={
@@ -102,9 +102,7 @@ const SelectionScreen = () => {
     setShowDropdown(!showDropdown)
     console.log(showDropdown)
   }
-  const handleDropdownClose = () => {
-    setShowDropdown(false)
-  }
+  
   return <div className="container mx-auto px-2 py-10 max-w-4xl">
       <div className="text-center mb-10">
         <h1 className="text-5xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">

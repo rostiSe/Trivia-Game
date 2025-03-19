@@ -252,7 +252,7 @@ const QuestionScreen = ({ onEndGame }: QuestionScreenProps) => {
           Quit
           </Link>
         </Button>
-<SaveEl  questions={questions[currentQuestionIndex]} />
+<SaveEl  questions={[questions[currentQuestionIndex]]} />
 
         </div>
                   
