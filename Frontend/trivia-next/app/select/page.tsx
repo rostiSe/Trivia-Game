@@ -1,7 +1,7 @@
 'use client'
 
-import React, { Suspense, useEffect, useState } from 'react';
-import { BookOpenIcon, BarChart3Icon, TrophyIcon, BotIcon, Minus, Plus } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { BookOpenIcon, BarChart3Icon, BotIcon, Minus, Plus } from 'lucide-react';
 import Button from '@/components/design/Button';
 import Card from '@/components/design/Card';
 import { useGameContext } from '@/lib/GameContext.';

@@ -1,11 +1,9 @@
 "use client";
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button'
-import { saveQuestion } from '@/lib/triviaFetch';
 // Removed unused console import
 import { SaveIcon } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
-import { set } from 'react-hook-form';
+import React, { useState } from 'react'
 
 export default function SaveEl({questions}:{questions: any}) {
   const [savedQuestion, setSavedQuestion] = useState(false)

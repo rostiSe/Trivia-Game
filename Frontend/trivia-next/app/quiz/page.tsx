@@ -7,8 +7,6 @@ import Button from "@/components/design/Button";
 import ProgressBar from "@/components/design/ProgressBar";
 import AnswerTile from "@/components/design/AnswerTile";
 import { useGameContext } from "@/lib/GameContext.";
-import { set } from "react-hook-form";
-import { useRouter } from "next/router";
 import Link from "next/link";
 import SaveEl from "../select/save";
 
@@ -119,9 +117,9 @@ const QuestionScreen = ({ onEndGame }: QuestionScreenProps) => {
       setGameOver(true);
     }
   };
-  var decodeEntities = (function() {
+  const decodeEntities = (function() {
     // this prevents any overhead from creating the object each time
-    var element = document.createElement('div');
+    const element = document.createElement('div');
   
     function decodeHTMLEntities (str: string | null) {
       if(str && typeof str === 'string') {

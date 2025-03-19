@@ -1,5 +1,3 @@
-const API_URL = ''
-
 export async function fetchTriviaQuestions () {
     try {
         const response = await fetch('http://localhost:3001/api/trivia')
