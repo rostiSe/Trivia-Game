@@ -16,10 +16,9 @@ interface Question {
 
 export default function SaveEl({questions}:{questions: Question[]}) {
   const [savedQuestion, setSavedQuestion] = useState(false)
-  const [error, setError] = useState(false)
     async function saveQuestionToDatabae(){
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/questions/save'`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -30,7 +29,6 @@ export default function SaveEl({questions}:{questions: Question[]}) {
         console.log(data)
         setSavedQuestion(true)
       } catch (error) {
-        setError(true)
 
         console.error("Error saving question to database:", error)
       }
@@ -39,7 +37,6 @@ export default function SaveEl({questions}:{questions: Question[]}) {
 
   return (
     <div>
-        {error?<Alert>Question allready saved to database</Alert>:null}
         <Button onClick={()=>saveQuestionToDatabae()} disabled={savedQuestion} className='bg-green-600/40 transition-all hover:bg-green-600/70 hover:shadow-lg -2 text-indigo-100 -green-800 h-[3rem]' >
             <SaveIcon size={24} />
             Save

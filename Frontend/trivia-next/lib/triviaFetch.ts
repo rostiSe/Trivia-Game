@@ -10,7 +10,7 @@ export async function fetchTriviaQuestions () {
 
 export async function saveQuestion (question:{question: string, correct_answer: string, incorrect_answers: string[], category: string, difficulty: string}) {
     try {
-        const response = await fetch('http://localhost:3001/api/questions/save', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/questions/save`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

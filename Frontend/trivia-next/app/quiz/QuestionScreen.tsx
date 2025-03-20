@@ -9,6 +9,8 @@ import AnswerTile from "@/components/design/AnswerTile";
 import { useGameContext } from "@/lib/GameContext.";
 import Link from "next/link";
 import SaveEl from "../select/save";
+import {decode} from 'html-entities';
+
 
 
 type Question = {
@@ -66,16 +68,30 @@ const QuestionScreen = () => {
 
   }, []);
 
-  // Concat Answers for first question
   useEffect(() => {
     if (questions.length > 0) {
-      // Merge answers for question 0
-      setAnswers([
+      // Merge correct + incorrect answers
+      const mergedAnswers = [
         ...questions[0].incorrect_answers,
         questions[0].correct_answer
-      ]);
+      ];
+  
+      // Shuffle them in-place
+      shuffleArray(mergedAnswers);
+  
+      // Now update state with the shuffled answers
+      setAnswers(mergedAnswers);
     }
   }, [questions]);
+  
+  function shuffleArray<T>(array: T[]): void {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      // Swap
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+  
 
   // Timer effect
   useEffect(() => {
@@ -202,14 +218,14 @@ const QuestionScreen = () => {
           </div>
         </div>
         <h2 className="text-2xl font-semibold mb-4">
-          {questions[currentQuestionIndex].question}
+          {decode(questions[currentQuestionIndex].question)}
         </h2>
       </Card>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
         {answers.map((answer, index) => (
           <AnswerTile
             key={index}
-            text={String(answer)}
+            text={decode(answer)}
             selected={selectedAnswer === answer}
             correct={
               showResult ? answer === questions[currentQuestionIndex].correct_answer : null
