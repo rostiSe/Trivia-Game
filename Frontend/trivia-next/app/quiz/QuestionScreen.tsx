@@ -45,7 +45,7 @@ const QuestionScreen = () => {
   const [timeLeft, setTimeLeft] = useState(30);
   const [gameOver, setGameOver] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [answers, setAnswers] = useState<string[]>([]);
+  const [answers, setAnswers] = useState<string[] >([]);
   // Fetch trivia questions
   useEffect(() => {
     async function fetchQuestions() {
@@ -125,8 +125,17 @@ const QuestionScreen = () => {
       setSelectedAnswer(null);
       setShowResult(false);
       setTimeLeft(30);
-      setAnswers(questions[currentQuestionIndex + 1 ].incorrect_answers.concat(questions[currentQuestionIndex + 1].correct_answer));
-    } else {
+      const nextIndex = currentQuestionIndex + 1;
+      const mergedAnswers = [
+        ...questions[nextIndex].incorrect_answers,
+        questions[nextIndex].correct_answer,
+      ];
+  
+      console.log("Next question index:", nextIndex, questions[nextIndex]);
+      console.log("Before shuffle:", mergedAnswers);
+      shuffleArray(mergedAnswers);
+      console.log("After shuffle:", mergedAnswers);  
+      setAnswers(mergedAnswers);    } else {
       setGameOver(true);
     }
   };
