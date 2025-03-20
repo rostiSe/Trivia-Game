@@ -1,6 +1,6 @@
 export async function fetchTriviaQuestions () {
     try {
-        const response = await fetch('http://localhost:3001/api/trivia')
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trivia/questions`)
         const data = await response.json()
         return data     
     } catch (error) {

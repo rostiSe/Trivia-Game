@@ -49,7 +49,7 @@ const QuestionScreen = () => {
     async function fetchQuestions() {
       try {
         const response = await fetch(
-          `http://localhost:3001/api/trivia?category=${gameOptions.id}&difficulty=${gameOptions.difficulty}&amount=${gameOptions.amount}&type=multiple`
+          `${process.env.NEXT_PUBLIC_API_URL}/api/trivia?category=${gameOptions.id}&difficulty=${gameOptions.difficulty}&amount=${gameOptions.amount}&type=multiple`
         );
         const data = await response.json();
         console.log('Fetched data:', data);

@@ -16,7 +16,7 @@ export default function QuestionsPage() {
   useEffect(()=>{
     async function fetchQuestions(){
       try {
-        const response = await fetch('http://localhost:3001/api/questions')
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/questions`)
         const data = await response.json()
         setQuestions(data)
         return data

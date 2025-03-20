@@ -47,7 +47,7 @@ const SelectionScreen = () => {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const response = await fetch('http://localhost:3001/api/trivia/categories');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trivia/categories`);
         const data = await response.json();
         setCategories(data.trivia_categories)
       } catch (error) {

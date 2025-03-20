@@ -19,7 +19,7 @@ export default function SaveEl({questions}:{questions: Question[]}) {
   const [error, setError] = useState(false)
     async function saveQuestionToDatabae(){
       try {
-        const response = await fetch('http://localhost:3001/api/questions/save', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
