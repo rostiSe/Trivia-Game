@@ -1,10 +1,8 @@
 "use client";
-import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button'
-import { Toaster } from '@/components/ui/sonner';
 // Removed unused console import
-import { SaveIcon, TriangleAlert } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import { SaveIcon } from 'lucide-react'
+import React, { useState } from 'react'
 import { toast } from 'sonner';
 
 interface Question {
@@ -43,7 +41,7 @@ export default function SaveEl({questions}:{questions: Question}) {
       }
      
     }
-
+    console.log(savedQuestion)
   return (
     <div>
         <Button onClick={()=>saveQuestionToDatabae()}  className='bg-green-600/40 transition-all hover:bg-green-600/70 hover:shadow-lg -2 text-indigo-100 -green-800 h-[3rem]' >
