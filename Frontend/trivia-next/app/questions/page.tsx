@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Card from "@/components/design/Card";
 import { Badge } from "@/components/ui/badge";
 import Button from "@/components/design/Button";
-import { PenBoxIcon, Trash, Trash2, Trash2Icon } from "lucide-react";
+import { PenBoxIcon, Trash, Trash2Icon } from "lucide-react";
 import { decode } from "html-entities";
 
 interface Question {
