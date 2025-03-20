@@ -54,3 +54,40 @@ export const getAllQuestions = async (req, res) => {
     return res.status(500).json({ error: 'Failed to fetch questions' });
   }
 }
+export const deleteQuestion = async (req, res) => {
+  try {
+    const { id } = req.body;           // <-- destructure 'id' from body
+    console.log("Deleting question ID:", id);
+
+    const deleted = await prisma.question.delete({
+      where: { id: id },               // <-- Must match the 'id' field in the schema
+    });
+    return res.json(deleted);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateQuestion = async (req, res) => {
+  try {
+    const { id, category, type, difficulty, question, correctAnswer, incorrectAnswers } = req.body;
+
+    const updated = await prisma.question.update({
+      where: { id: id },
+      data: {
+        category,
+        type,
+        difficulty,
+        question,
+        correctAnswer,
+        incorrectAnswers,
+      }
+    });
+
+    return res.json(updated);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+}
