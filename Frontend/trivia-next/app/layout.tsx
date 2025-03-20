@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { GameProvider } from "@/lib/GameContext.";
 import NavigationBar from "@/components/design/navigation";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,11 +27,13 @@ export default function RootLayout({
 }>) {
   return (
     <GameProvider>
+            <Toaster />
+
       <html lang="en">
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased `}
         >
-          <div className="min-h-screen bg-gradient-to-b from-indigo-900 to-purple-900 text-white">
+          <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-indigo-900 to-purple-900 text-white">
             <NavigationBar />
             {children}
           </div>

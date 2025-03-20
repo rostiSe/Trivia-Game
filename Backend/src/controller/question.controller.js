@@ -21,7 +21,10 @@ export const saveExternalQuestion = async (req, res) => {
       }
     });
 
- 
+    // If question already exists, return an error
+    if (existingQuestion) {
+      return res.status(409).json({ error: "Question already exists" });
+    }
 
     // If question doesn't exist, create it
     const newQ = await prisma.question.create({

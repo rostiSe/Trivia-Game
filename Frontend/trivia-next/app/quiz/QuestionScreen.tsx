@@ -19,23 +19,7 @@ type Question = {
   correct_answer: string;
   incorrect_answers: string[];
 };
-// // Mock data for demonstration purposes
-// const mockQuestions = [{
-//   id: 1,
-//   question: 'Which planet in our solar system is known as the Red Planet?',
-//   answers: ['Venus', 'Mars', 'Jupiter', 'Saturn'],
-//   correctAnswer: 'Mars'
-// }, {
-//   id: 2,
-//   question: 'What is the largest mammal on Earth?',
-//   answers: ['Elephant', 'Giraffe', 'Blue Whale', 'Polar Bear'],
-//   correctAnswer: 'Blue Whale'
-// }, {
-//   id: 3,
-//   question: "Which element has the chemical symbol 'O'?",
-//   answers: ['Gold', 'Oxygen', 'Osmium', 'Oganesson'],
-//   correctAnswer: 'Oxygen'
-// }];
+
 const QuestionScreen = () => {
   const { gameOptions } = useGameContext();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -215,6 +199,10 @@ const QuestionScreen = () => {
               <span className="font-medium">{gameOptions.difficulty}</span>
             </div>
           </div>
+          <div className="flex items-center gap-4">
+          <SaveEl  questions={questions[currentQuestionIndex]} />
+
+          
           <div className="flex items-center bg-indigo-900/80 px-3 py-1 rounded-lg">
             <ClockIcon size={18} className="mr-1 text-yellow-400" />
             <span
@@ -224,6 +212,7 @@ const QuestionScreen = () => {
             >
               {timeLeft.toString().padStart(2, "0")}
             </span>
+          </div>
           </div>
         </div>
         <h2 className="text-2xl font-semibold mb-4">
@@ -255,7 +244,6 @@ const QuestionScreen = () => {
           Quit
           </Link>
         </Button>
-<SaveEl  questions={[questions[currentQuestionIndex]]} />
 
         </div>
                   

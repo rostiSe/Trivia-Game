@@ -5,7 +5,7 @@ import React from 'react'
 
 export default function NavigationBar() {
   return (
-    <div>
+    <div className='w-full'>
     <nav className="flex items-center p-4 bg-transparent">
         <button 
             onClick={() => window.history.back()} 
