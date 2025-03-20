@@ -4,8 +4,15 @@ import Card from '@/components/design/Card'
 import { Badge } from '@/components/ui/badge'
 import React, { useEffect } from 'react'
 
+interface Question {
+  difficulty: string;
+  question: string;
+  correct_answer: string;
+  incorrect_answers: string[];
+}
+
 export default function QuestionsPage() {
-  const [questions, setQuestions] = React.useState([])
+  const [questions, setQuestions] = React.useState<Question[]>([]);
   useEffect(()=>{
     async function fetchQuestions(){
       try {
