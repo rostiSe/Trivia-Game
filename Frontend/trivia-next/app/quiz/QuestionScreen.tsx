@@ -114,25 +114,8 @@ const QuestionScreen = () => {
       setGameOver(true);
     }
   };
-  const decodeEntities = (function() {
-    // this prevents any overhead from creating the object each time
-    const element = document.createElement('div');
+
   
-    function decodeHTMLEntities (str: string | null) {
-      if(str && typeof str === 'string') {
-        // strip script/html tags
-        str = str.replace(/<script[^>]*>([\S\s]*?)<\/script>/gmi, '');
-        str = str.replace(/<\/?\w(?:[^"'>]|"[^"]*"|'[^']*')*>/gmi, '');
-        element.innerHTML = str;
-        str = element.textContent;
-        element.textContent = '';
-      }
-  
-      return str;
-    }
-  
-    return decodeHTMLEntities;
-  })();
   if (!questions || questions.length === 0) {
     return <div>Loading...</div>;
   }
@@ -200,7 +183,7 @@ const QuestionScreen = () => {
           <div>
             <span className="text-sm text-indigo-300">
               Category:{" "}
-              <span className="font-medium">{decodeEntities(gameOptions.category)}</span>
+              <span className="font-medium">{gameOptions.category}</span>
             </span>
             <div className="text-sm text-indigo-300">
               Difficulty:{" "}
@@ -219,14 +202,14 @@ const QuestionScreen = () => {
           </div>
         </div>
         <h2 className="text-2xl font-semibold mb-4">
-          {decodeEntities(questions[currentQuestionIndex].question)}
+          {questions[currentQuestionIndex].question}
         </h2>
       </Card>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
         {answers.map((answer, index) => (
           <AnswerTile
             key={index}
-            text={String(decodeEntities(answer))}
+            text={String(answer)}
             selected={selectedAnswer === answer}
             correct={
               showResult ? answer === questions[currentQuestionIndex].correct_answer : null
