@@ -1,5 +1,7 @@
 // /controllers/questionController.js
-import prisma from '../prismaClient.js';
+
+import prisma from "../prismaClient.js";
+
 
 export const saveExternalQuestion = async (req, res) => {
   try {

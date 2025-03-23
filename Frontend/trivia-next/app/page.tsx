@@ -3,6 +3,8 @@ import { Play, Save } from "lucide-react";
 import Link from "next/link";
 
 export default function App() {
+
+
   return (
     <div className="container  text-white">
       
@@ -19,6 +21,11 @@ export default function App() {
         <Button className="w-full  max-w-[20rem] mt-3">
           <Link className="" href="/questions">
               <Save className="inline"/> Saved Questions
+          </Link> 
+        </Button>
+        <Button variant="outline" className="w-full  max-w-[20rem] mt-3">
+          <Link className="" href="/playground">
+              <Save className="inline"/> To the playground
           </Link>
         </Button>
       </main>
