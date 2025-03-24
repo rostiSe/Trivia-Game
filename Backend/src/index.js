@@ -6,6 +6,7 @@ import questionRoutes from './routes/question.routes.js';
 import triviaRoutes from './routes/trivia.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import cookieParser from 'cookie-parser';
+import prisma from './prismaClient.js';
 
 dotenv.config(); // Loads .env
 
@@ -30,8 +31,28 @@ app.get("/api/test-cookie", (req, res) => {
   res.json({ cookies: req.cookies });
 });
 
-// Start server
+// Connect to the database then start the server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Express server running on http://localhost:${PORT}`);
+
+// Add a health check endpoint for Render
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
 });
+
+// Connect to the database and start the server
+async function startServer() {
+  try {
+    // Test database connection
+    await prisma.$connect();
+    console.log('Successfully connected to the database');
+    
+    app.listen(PORT, () => {
+      console.log(`Express server running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to connect to the database', error);
+    process.exit(1);
+  }
+}
+
+startServer();

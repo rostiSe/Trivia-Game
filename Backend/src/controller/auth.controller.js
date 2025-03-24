@@ -1,15 +1,22 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-// import prisma from '../../../Backend/src/prismaClient.js';
+import prisma from '../prismaClient.js';
+// The above should work, but breaks in production. Use the following instead:
+// import { PrismaClient } from '@prisma/client';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-very-secure-secret';
-const prisma = new PrismaClient()
 
 // GET All users api/auth/
-export const getAllUsers = async (req, res)=>{
-  const response = await prisma.user.findMany()
-  return res.json(response);
+export const getAllUsers = async (req, res) => {
+  try {
+    const response = await prisma.user.findMany();
+    return res.json(response);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return res.status(500).json({ error: 'Failed to fetch users' });
+  }
 }
+
 // PUT check if user is signed in api/auth/me
 export const checkUser = async (req, res)=>{
   const token = req.cookies.token;
