@@ -7,6 +7,7 @@ import triviaRoutes from './routes/trivia.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import cookieParser from 'cookie-parser';
 import prisma, { testConnection } from './prismaClient.js';
+import bcrypt from 'bcrypt';
 
 dotenv.config(); // Loads .env
 
@@ -25,13 +26,41 @@ app.use(cookieParser());
 // API health check endpoint for Render and monitoring
 app.get('/health', async (req, res) => {
   try {
-    // For MongoDB, we can check connection by running a simple command
-    // Try to get a user count (will work even if there are no users)
-    await prisma.user.count();
+    // Check using the Question model which we know works
+    await prisma.question.count();
     return res.status(200).json({ status: 'ok', database: 'connected' });
   } catch (error) {
     console.error('Health check failed:', error);
     return res.status(500).json({ status: 'error', database: 'disconnected', message: error.message });
+  }
+});
+
+// Diagnostic endpoint to check Prisma models
+app.get('/api/diagnostics', (req, res) => {
+  try {
+    // List available Prisma models and methods
+    const availableModels = Object.keys(prisma).filter(k => !k.startsWith('_') && !k.startsWith('$'));
+    
+    // Check if methods exist on the user model
+    const userModelExists = typeof prisma.user !== 'undefined';
+    const userMethods = userModelExists ? Object.keys(prisma.user).filter(k => !k.startsWith('_')) : [];
+    
+    // Check if methods exist on the question model 
+    const questionModelExists = typeof prisma.question !== 'undefined';
+    const questionMethods = questionModelExists ? Object.keys(prisma.question).filter(k => !k.startsWith('_')) : [];
+    
+    return res.status(200).json({
+      availableModels,
+      userModelExists,
+      userMethods,
+      questionModelExists,
+      questionMethods,
+      nodeEnv: process.env.NODE_ENV || 'not set',
+      databaseUrl: process.env.DATABASE_URL ? 'Set but not shown' : 'Not set'
+    });
+  } catch (error) {
+    console.error('Diagnostics failed:', error);
+    return res.status(500).json({ error: error.message });
   }
 });
 
@@ -47,6 +76,54 @@ app.use('/api/auth', authRoutes);
 app.get("/api/test-cookie", (req, res) => {
   console.log("Received cookies:", req.cookies);
   res.json({ cookies: req.cookies });
+});
+
+// API route to manually create the User model if it doesn't exist
+app.get('/api/setup/user-model', async (req, res) => {
+  try {
+    // Check if prisma.user exists
+    if (typeof prisma.user === 'undefined') {
+      return res.status(500).json({ 
+        error: 'User model not available in Prisma client. Please run prisma db push.' 
+      });
+    }
+    
+    // Try to create a test user to ensure the collection exists
+    try {
+      // First check if the email already exists
+      const testUser = await prisma.user.findUnique({
+        where: { email: 'test@example.com' }
+      });
+      
+      if (!testUser) {
+        // Create a test user (this will create the collection if it doesn't exist)
+        await prisma.user.create({
+          data: {
+            name: 'Test User',
+            email: 'test@example.com',
+            password: await bcrypt.hash('testpassword', 10)
+          }
+        });
+      }
+      
+      // Count users to verify it's working
+      const count = await prisma.user.count();
+      
+      return res.status(200).json({ 
+        success: true, 
+        message: 'User model is working correctly',
+        userCount: count
+      });
+    } catch (error) {
+      console.error('Error testing User model:', error);
+      return res.status(500).json({ 
+        error: `Error with User model: ${error.message}` 
+      });
+    }
+  } catch (error) {
+    console.error('User model setup failed:', error);
+    return res.status(500).json({ error: error.message });
+  }
 });
 
 // Connect to the database then start the server

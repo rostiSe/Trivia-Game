@@ -38,6 +38,19 @@ export async function testConnection() {
   try {
     await prisma.$connect();
     console.log('✓ Successfully connected to database');
+    
+    // Check which models are accessible
+    const models = Object.keys(prisma).filter(k => !k.startsWith('_') && !k.startsWith('$'));
+    console.log('Available models:', models);
+    
+    // Check if User model exists
+    if (typeof prisma.user === 'undefined') {
+      console.error('WARNING: User model is not available in Prisma client!');
+      console.log('This might be due to missing schema synchronization.');
+    } else {
+      console.log('✓ User model is available');
+    }
+    
     return true;
   } catch (error) {
     console.error('Failed to connect to database:', error);

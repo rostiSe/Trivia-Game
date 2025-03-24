@@ -7,11 +7,20 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-very-secure-secret';
 // GET All users api/auth/
 export const getAllUsers = async (req, res) => {
   try {
+    // Check if User model is available
+    if (typeof prisma.user === 'undefined') {
+      console.error("User model is not available in Prisma client");
+      return res.status(500).json({ 
+        error: 'Database schema issue: User model not available',
+        hint: 'Please ensure your Prisma schema is properly synchronized with the database'
+      });
+    }
+    
     const response = await prisma.user.findMany();
     return res.json(response);
   } catch (error) {
     console.error("Error fetching users:", error);
-    return res.status(500).json({ error: 'Failed to fetch users' });
+    return res.status(500).json({ error: 'Failed to fetch users', details: error.message });
   }
 }
 
