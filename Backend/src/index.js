@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import questionRoutes from './routes/question.routes.js';
 import triviaRoutes from './routes/trivia.routes.js';
+import authRoutes from './routes/auth.routes.js';
 
 dotenv.config(); // Loads .env
 
@@ -21,6 +22,7 @@ app.get('/', (req, res) => {
 // Use our question routes
 app.use('/api/questions', questionRoutes);
 app.use('/api/trivia', triviaRoutes);
+app.use('/api/auth', authRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5000;

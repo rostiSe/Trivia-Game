@@ -4,6 +4,7 @@ import "./globals.css";
 import { GameProvider } from "@/lib/GameContext.";
 import NavigationBar from "@/components/design/navigation";
 import { Toaster } from "sonner";
+import ProtectedWrapper from "./(auth)/protect-wrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,10 +34,15 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased `}
         >
+          <ProtectedWrapper>
           <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-indigo-900 to-purple-900 text-white">
             <NavigationBar />
+            <div className="pt-10">
             {children}
+
+            </div>
           </div>
+          </ProtectedWrapper>
         </body>
       </html>
     </GameProvider>

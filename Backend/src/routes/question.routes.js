@@ -1,5 +1,7 @@
 import express from 'express'
 import { deleteQuestion, getAllQuestions, saveExternalQuestion, updateQuestion } from '../controller/question.controller.js'
+import  authenticateToken from '../middleware/auth.middleware.js';
+
 
 const router = express.Router()
 
