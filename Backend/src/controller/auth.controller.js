@@ -1,9 +1,7 @@
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import prisma from '../prismaClient.js';
-// The above should work, but breaks in production. Use the following instead:
-// import { PrismaClient } from '@prisma/client';
+
 const JWT_SECRET = process.env.JWT_SECRET || 'your-very-secure-secret';
 
 // GET All users api/auth/
