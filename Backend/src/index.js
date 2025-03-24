@@ -8,8 +8,31 @@ import authRoutes from './routes/auth.routes.js';
 import cookieParser from 'cookie-parser';
 import prisma, { testConnection } from './prismaClient.js';
 import bcrypt from 'bcrypt';
+import { MongoClient, ObjectId } from 'mongodb';
 
 dotenv.config(); // Loads .env
+
+// Setup direct MongoDB connection as fallback
+let mongoClient;
+let directDb;
+
+async function connectMongo() {
+  if (!process.env.DATABASE_URL) {
+    console.error('DATABASE_URL environment variable not set');
+    return false;
+  }
+
+  try {
+    mongoClient = new MongoClient(process.env.DATABASE_URL);
+    await mongoClient.connect();
+    directDb = mongoClient.db();
+    console.log('✓ Direct MongoDB connection established as fallback');
+    return true;
+  } catch (err) {
+    console.error('Failed to establish direct MongoDB connection:', err);
+    return false;
+  }
+}
 
 const app = express();
 
@@ -83,11 +106,60 @@ app.get('/api/setup/user-model', async (req, res) => {
   try {
     // Check if prisma.user exists
     if (typeof prisma.user === 'undefined') {
-      return res.status(500).json({ 
-        error: 'User model not available in Prisma client. Please run prisma db push.' 
-      });
+      console.log('Prisma User model not available, trying direct MongoDB approach');
+      
+      // Try direct MongoDB access
+      if (!directDb) {
+        const connected = await connectMongo();
+        if (!connected) {
+          return res.status(500).json({
+            error: 'User model not available in Prisma client and failed to connect directly to MongoDB'
+          });
+        }
+      }
+      
+      // Create User collection if it doesn't exist
+      try {
+        const collections = await directDb.listCollections().toArray();
+        const userCollectionExists = collections.some(c => c.name === 'User');
+        
+        if (!userCollectionExists) {
+          await directDb.createCollection('User');
+          console.log('Created User collection directly in MongoDB');
+        }
+        
+        // Check if test user exists
+        const testUser = await directDb.collection('User').findOne({ email: 'test@example.com' });
+        
+        if (!testUser) {
+          // Create a test user
+          const hashedPassword = await bcrypt.hash('testpassword', 10);
+          await directDb.collection('User').insertOne({
+            name: 'Test User',
+            email: 'test@example.com',
+            password: hashedPassword,
+            createdAt: new Date()
+          });
+          console.log('Created test user directly in MongoDB');
+        }
+        
+        const count = await directDb.collection('User').countDocuments();
+        
+        return res.status(200).json({
+          success: true,
+          message: 'User collection is accessible via direct MongoDB connection',
+          userCount: count,
+          note: 'Prisma User model is still not available - a server restart may be needed'
+        });
+      } catch (dbError) {
+        console.error('Error working directly with MongoDB:', dbError);
+        return res.status(500).json({
+          error: `Error with direct MongoDB access: ${dbError.message}`
+        });
+      }
     }
     
+    // Original Prisma approach continues below
     // Try to create a test user to ensure the collection exists
     try {
       // First check if the email already exists
@@ -133,11 +205,58 @@ const PORT = process.env.PORT || 5000;
 async function startServer() {
   let retries = 5;
   
+  // First try to establish direct MongoDB connection as a fallback
+  await connectMongo();
+  
   while (retries) {
     try {
       // Test database connection
       const isConnected = await testConnection();
       if (!isConnected) throw new Error('Database connection test failed');
+      
+      // Dynamically add User model if it doesn't exist
+      if (typeof prisma.user === 'undefined') {
+        console.warn('User model not found. Attempting runtime workaround...');
+        
+        try {
+          // This creates a manual proxy for the User model operations
+          // It won't have type safety but will allow basic CRUD operations
+          const db = prisma._baseDmmf.datamodel;
+          const userModelExists = db.models.find(m => m.name === 'User');
+          
+          if (userModelExists) {
+            console.log('User model found in schema but not in client. Creating proxy...');
+            
+            // Create a proxy for basic User operations
+            prisma.user = {
+              async findMany() {
+                return await prisma.$queryRaw`db.User.find({})`;
+              },
+              async findUnique({ where }) {
+                if (where.id) {
+                  return await prisma.$queryRaw`db.User.findOne({ "_id": ObjectId("${where.id}") })`;
+                }
+                if (where.email) {
+                  return await prisma.$queryRaw`db.User.findOne({ "email": "${where.email}" })`;
+                }
+                return null;
+              },
+              async create({ data }) {
+                return await prisma.$queryRaw`db.User.insertOne(${JSON.stringify(data)})`;
+              },
+              async count() {
+                const result = await prisma.$queryRaw`db.User.count({})`;
+                return result ? parseInt(result) : 0;
+              }
+            };
+            console.log('✓ User model proxy created successfully');
+          } else {
+            console.error('User model not found in schema definition either. Cannot create proxy.');
+          }
+        } catch (proxyError) {
+          console.error('Failed to create User model proxy:', proxyError);
+        }
+      }
       
       // Start server only after successful connection
       app.listen(PORT, () => {
