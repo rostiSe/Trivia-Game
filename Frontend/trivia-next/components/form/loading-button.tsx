@@ -1,7 +1,9 @@
-import React, { ButtonHTMLAttributes } from 'react'
+import React from 'react'
 import { Button } from '../ui/button'
 
-export default function LoadingButton({pending, children, onClick, type}: {type?: any | null , pending: boolean, children: React.ReactNode, onClick: () => void}) {
+type ButtonType = "button" | "submit" | "reset";
+
+export default function LoadingButton({pending, children, onClick, type}: {type?: ButtonType , pending: boolean, children: React.ReactNode, onClick: () => void}) {
   return (
     <Button disabled={pending} type={type} onClick={onClick}>
       {pending ? (

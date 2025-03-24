@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import questionRoutes from './routes/question.routes.js';
 import triviaRoutes from './routes/trivia.routes.js';
 import authRoutes from './routes/auth.routes.js';
+import cookieParser from 'cookie-parser';
 
 dotenv.config(); // Loads .env
 
@@ -13,6 +14,7 @@ const app = express();
 // CORS + JSON body parser
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 // Main route
 app.get('/', (req, res) => {
@@ -23,6 +25,10 @@ app.get('/', (req, res) => {
 app.use('/api/questions', questionRoutes);
 app.use('/api/trivia', triviaRoutes);
 app.use('/api/auth', authRoutes);
+app.get("/api/test-cookie", (req, res) => {
+  console.log("Received cookies:", req.cookies);
+  res.json({ cookies: req.cookies });
+});
 
 // Start server
 const PORT = process.env.PORT || 5000;
