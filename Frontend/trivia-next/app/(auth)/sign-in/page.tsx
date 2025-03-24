@@ -31,6 +31,8 @@ export default function SignInPage() {
       if (response.ok && data.token) {
         // Save the token in localStorage (or consider HttpOnly cookies for better security)
         localStorage.setItem("token", data.token);
+        router.push("select")
+
         // Redirect to a protected route or homepage
         router.push("/");
       } else {
@@ -41,7 +43,6 @@ export default function SignInPage() {
             setError("An unexpected error occurred");
         } finally {
             setLoading(false);
-            router.push("select")
         }
     }
     // Check if user is already authenticated
