@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AuthWrapper from "../(auth)/AuthWrapper";
 import NavigationBar from "@/components/design/navigation";
-import { useAuthStore } from "@/store/auth.store";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -17,12 +16,7 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
-  console.log(cookieStore);
-
-  const setUser = useAuthStore((state) => state.setUser);
-
-
-
+  
   // Call your Express API to check the user
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
     headers: { cookie: cookieHeader },
@@ -36,14 +30,11 @@ export default async function RootLayout({
 
   // Parse the user data
   const data = await res.json();
-  setUser(data); // Update Zustand store with
-  console.log(data);
-  return (
   
-        <AuthWrapper userFromServer={data}>
-            <NavigationBar />
-          {children}
-        </AuthWrapper>
-      
+  return (
+    <AuthWrapper userFromServer={data}>
+      <NavigationBar />
+      {children}
+    </AuthWrapper>
   );
 }
