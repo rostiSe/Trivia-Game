@@ -42,7 +42,7 @@ const app = express();
 // Determine CORS settings based on environment
 const corsOptions = process.env.NODE_ENV === 'production' 
   ? {
-      origin: [process.env.FRONTEND_URL || 'http://localhost:3000'],
+      origin: [process.env.FRONTEND_URL || 'https://trivia-game-pi5.vercel.app/'],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
