@@ -30,20 +30,33 @@ export default function SignInPage() {
         setError("");
 
         try {
+            console.log('Attempting sign in...');
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/api/auth/sign-in`,
                 {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
                     body: JSON.stringify({ email, password }),
                     credentials: "include",
                 }
             );
+            
+            console.log('Sign in response status:', response.status);
             const data = await response.json();
+            console.log('Sign in response data:', data);
             
             if (response.ok && data.token) {
+                // Store token in localStorage
                 localStorage.setItem("token", data.token);
-                router.replace('/select');
+                
+                // Store user data in localStorage for persistence
+                localStorage.setItem("user", JSON.stringify(data.user));
+                
+                // Force a hard navigation to ensure clean state
+                window.location.href = '/select';
             } else {
                 setError(data.error || "Login failed");
             }
