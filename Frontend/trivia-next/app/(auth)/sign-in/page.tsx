@@ -4,6 +4,7 @@ import Card from '@/components/design/Card';
 import LoadingButton from '@/components/form/loading-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAuthStore } from '@/store/auth.store';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
@@ -27,37 +28,17 @@ export default function SignInPage() {
         e.preventDefault();
         setLoading(true);
         setError("");
-
-        try {
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/auth/sign-in`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Accept": "application/json"
-                    },
-                    body: JSON.stringify({ email, password }),
-                    credentials: "include",
-                }
-            );
-
-            const data = await response.json();
-
-            if (response.ok && data.token) {
-                localStorage.setItem("token", data.token);
-                localStorage.setItem("user", JSON.stringify(data.user));
-                router.push("/select");
-            } else {
-                setError(data.error || "Login failed");
-            }
-        } catch (err) {
-            console.error("Sign-in error:", err);
-            setError("An unexpected error occurred");
-        } finally {
-            setLoading(false);
+      
+        const success = await useAuthStore.getState().signIn({ email, password });
+      
+        if (success) {
+          router.push("/select");
+        } else {
+          setError(useAuthStore.getState().error || "Login failed");
         }
-    };
+      
+        setLoading(false);
+      };
 
     return (
         <div className="flex items-center justify-center min-h-screen">
