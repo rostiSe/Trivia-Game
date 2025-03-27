@@ -14,10 +14,8 @@ export default function AuthWrapper({ userFromServer, children }) {
     if (!user && userFromServer) {
       setUser(userFromServer);
     }
-  }, []);
+  }, [user, userFromServer, setUser]);
 
-  console.log(user);
-  console.log(userFromServer);
   // Optionally, show a loading state until the store is updated
   if (!user) return <div>Loading... Client</div>;
 

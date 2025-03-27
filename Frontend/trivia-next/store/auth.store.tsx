@@ -4,7 +4,6 @@ interface User {
   id: string;
   name: string;
   email: string;
-  // Add any additional fields as needed
 }
 
 interface AuthState {
@@ -12,10 +11,9 @@ interface AuthState {
   loading: boolean;
   error: string | null;
   setUser: (user: User | null) => void;
-  checkUser: () => Promise<void>;
-  signIn: (credentials: { email: string; password: string }) => Promise<void>;
-  signOut: () => Promise<void>;
   initialize: () => void;
+  signIn: (credentials: { email: string; password: string }) => Promise<boolean>;
+  signOut: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -23,106 +21,67 @@ export const useAuthStore = create<AuthState>((set) => ({
   loading: true,
   error: null,
 
-  // Initialize auth state from localStorage
+  // Initialize Zustand store from localStorage immediately
   initialize: () => {
-    try {
+    if (typeof window !== 'undefined') {
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
         set({ user: JSON.parse(storedUser), loading: false });
       } else {
         set({ loading: false });
       }
-    } catch (error) {
-      console.error('Error initializing auth state:', error);
-      set({ loading: false });
     }
   },
 
-  // Immediately update the user and mark loading as false.
   setUser: (user: User | null) => {
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
     } else {
       localStorage.removeItem('user');
+      localStorage.removeItem('token');
     }
     set({ user, loading: false });
   },
 
-  // Client-side check for authenticated user
-  checkUser: async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
-        credentials: 'include',
-        headers: {
-          'Accept': 'application/json'
-        }
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        set({ user: data, loading: false, error: null });
-        localStorage.setItem('user', JSON.stringify(data));
-      } else {
-        set({ user: null, loading: false });
-        localStorage.removeItem('user');
-      }
-    } catch (error: any) {
-      console.error('Error checking user:', error);
-      set({ error: error.message, loading: false });
-    }
-  },
-
-  // Sign in action with provided credentials
-  signIn: async (credentials: { email: string; password: string }) => {
+  signIn: async ({ email, password }) => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/sign-in`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          Accept: 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(credentials),
+        body: JSON.stringify({ email, password }),
       });
-      
+
       if (res.ok) {
         const data = await res.json();
-        set({ user: data.user, error: null });
-        localStorage.setItem('user', JSON.stringify(data.user));
         localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        set({ user: data.user, error: null, loading: false });
+        return true;
       } else {
         const errorData = await res.json();
-        set({ error: errorData.message });
+        set({ error: errorData.message, loading: false });
+        return false;
       }
     } catch (error: any) {
-      console.error('Sign in error:', error);
-      set({ error: error.message });
+      set({ error: error.message, loading: false });
+      return false;
     }
   },
 
-  // Sign out action
   signOut: async () => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/sign-out`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        // Clear all auth-related data
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        set({ user: null, error: null });
-      } else {
-        throw new Error('Failed to sign out');
-      }
-    } catch (error: any) {
-      console.error('Sign out error:', error);
-      set({ error: error.message });
-    }
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/sign-out`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    set({ user: null, loading: false });
   },
 }));

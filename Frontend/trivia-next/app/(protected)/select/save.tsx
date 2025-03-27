@@ -42,7 +42,6 @@ export default function SaveEl({questions}:{questions: Question}) {
       }
      
     }
-    console.log(savedQuestion)
   return (
     <div>
         <Button onClick={()=>saveQuestionToDatabae()}  className='bg-green-600/40 transition-all hover:bg-green-600/70 hover:shadow-lg -2 text-indigo-100 -green-800 h-[3rem]' >
