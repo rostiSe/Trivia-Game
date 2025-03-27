@@ -45,7 +45,7 @@ export default function SignInPage() {
             }
         } catch (err) {
             console.error("Sign-in error:", err);
-                        // @ts-expect-error
+                        // @ts-expect-error stupid err
             setError(err.message || "An unexpected error occurred");
         } finally {
             setLoading(false);
