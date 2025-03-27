@@ -1,26 +1,27 @@
-"use client"
+"use client";
 
 import Card from '@/components/design/Card';
 import LoadingButton from '@/components/form/loading-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRouter } from 'next/navigation';
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react';
 
 export default function SignInPage() {
-    const [email, setEmail] = React.useState("");
-    const [password, setPassword] = React.useState("");
-    const [loading, setLoading] = React.useState(false);
-    const [error, setError] = React.useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
     const router = useRouter();
 
-    // Check token only once on mount with empty dependency array
     useEffect(() => {
+        if (typeof window === 'undefined') return;
+
         const token = localStorage.getItem('token');
         if (token) {
             router.replace("/select");
         }
-    }, []); // Empty dependency array means "run once on mount"
+    }, [router]);
 
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,12 +29,11 @@ export default function SignInPage() {
         setError("");
 
         try {
-            console.log('Attempting sign in...');
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/api/auth/sign-in`,
                 {
                     method: "POST",
-                    headers: { 
+                    headers: {
                         "Content-Type": "application/json",
                         "Accept": "application/json"
                     },
@@ -41,20 +41,13 @@ export default function SignInPage() {
                     credentials: "include",
                 }
             );
-            
-            console.log('Sign in response status:', response.status);
+
             const data = await response.json();
-            console.log('Sign in response data:', data);
-            
+
             if (response.ok && data.token) {
-                // Store token in localStorage
                 localStorage.setItem("token", data.token);
-                
-                // Store user data in localStorage for persistence
                 localStorage.setItem("user", JSON.stringify(data.user));
-                
-                // Force a hard navigation to ensure clean state
-                router.push("/select")
+                router.push("/select");
             } else {
                 setError(data.error || "Login failed");
             }
@@ -64,7 +57,7 @@ export default function SignInPage() {
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     return (
         <div className="flex items-center justify-center min-h-screen">
