@@ -14,15 +14,13 @@ export default function SignInPage() {
     const [error, setError] = React.useState("");
     const router = useRouter();
 
-    // Check token only in development
+    // Check token only once on mount with empty dependency array
     useEffect(() => {
-        if (process.env.NODE_ENV === 'development') {
-            const token = localStorage.getItem('token');
-            if (token) {
-                router.replace('/select');
-            }
+        const token = localStorage.getItem('token');
+        if (token) {
+            router.replace("/select");
         }
-    }, [router]);
+    }, []); // Empty dependency array means "run once on mount"
 
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -56,7 +54,7 @@ export default function SignInPage() {
                 localStorage.setItem("user", JSON.stringify(data.user));
                 
                 // Force a hard navigation to ensure clean state
-                window.location.href = '/select';
+                router.push("/select")
             } else {
                 setError(data.error || "Login failed");
             }
