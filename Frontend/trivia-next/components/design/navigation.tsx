@@ -10,8 +10,8 @@ import { useAuthStore } from "@/store/auth.store";
 export default function NavigationBar() {
   const router = useRouter();
   const [hasToken, setHasToken] = useState(false);
-  const user = useAuthStore((state: any) => state.user);
-  const signOut = useAuthStore((state: any) => state.signOut);
+  const user = useAuthStore((state) => state.user);
+  const signOut = useAuthStore((state) => state.signOut);
 
   // Check for token on mount
   useEffect(() => {

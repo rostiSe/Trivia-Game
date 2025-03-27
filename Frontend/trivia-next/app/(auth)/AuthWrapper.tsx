@@ -4,12 +4,9 @@
 import { useAuthStore } from '@/store/auth.store';
 import { useEffect } from 'react';
 
-interface AuthWrapperProps {
-  userFromServer: any
-  children: React.ReactNode;
-}
 
-export default function AuthWrapper({ userFromServer, children }: AuthWrapperProps) {
+// @ts-ignore
+export default function AuthWrapper({ userFromServer, children }) {
   const { user, setUser } = useAuthStore();
 
   // Hydrate the Zustand store with the server-provided user

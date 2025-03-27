@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import { BookOpenIcon, BarChart3Icon, BotIcon, Minus, Plus } from 'lucide-react';
 import Button from '@/components/design/Button';
 import Card from '@/components/design/Card';
-import { useGameContext } from '@/lib/GameContext.';
 import { Alert } from '@/components/ui/alert';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
