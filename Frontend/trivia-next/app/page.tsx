@@ -1,11 +1,12 @@
 import Button from "@/components/design/Button";
+import NavigationBar from "@/components/design/navigation";
 import { Play, Save } from "lucide-react";
 import Link from "next/link";
 
 export default function App() {
   return (
     <div className="container  text-white">
-      
+      <NavigationBar />
       <main className="flex flex-col items-center justify-center  px-1">
         <h2 className="text-3xl font-bold mb-4 text-center">Erstellen Sie ein Quiz, das Spaß macht</h2>
         <p className="text-lg text-center">

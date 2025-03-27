@@ -5,10 +5,12 @@ import dotenv from 'dotenv';
 import questionRoutes from './routes/question.routes.js';
 import triviaRoutes from './routes/trivia.routes.js';
 import authRoutes from './routes/auth.routes.js';
+import userRoutes from './routes/user.routes.js';
 import cookieParser from 'cookie-parser';
 import prisma, { testConnection } from './prismaClient.js';
 import bcrypt from 'bcrypt';
-import { MongoClient, ObjectId } from 'mongodb';
+import { MongoClient } from 'mongodb';
+import { setCookieMiddleware } from './middleware/cookie.middleware.js';
 
 dotenv.config(); // Loads .env
 
@@ -37,12 +39,26 @@ async function connectMongo() {
 const app = express();
 
 // CORS + JSON body parser
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL || true
-    : true,
-  credentials: true
-}));
+// Determine CORS settings based on environment
+const corsOptions = process.env.NODE_ENV === 'production' 
+  ? {
+      origin: [process.env.FRONTEND_URL || 'http://localhost:3000'],
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      exposedHeaders: ['set-cookie']
+    }
+  : {
+      // In development, be permissive to help with debugging
+      origin: true,
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      exposedHeaders: ['set-cookie']
+    };
+
+console.log('Using CORS settings:', corsOptions);
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -93,12 +109,31 @@ app.get('/', (req, res) => {
 });
 
 // Use our question routes
+app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/trivia', triviaRoutes);
-app.use('/api/auth', authRoutes);
-app.get("/api/test-cookie", (req, res) => {
-  console.log("Received cookies:", req.cookies);
-  res.json({ cookies: req.cookies });
+
+// Simple cookie test endpoint  
+  
+
+// Set hosting platform
+app.get('/api/set-platform/:platform', (req, res) => {
+  const { platform } = req.params;
+  if (['render', 'firebase', 'heroku', 'vercel', 'netlify', 'local'].includes(platform)) {
+    process.env.HOSTING_PLATFORM = platform;
+    console.log(`Set hosting platform to: ${platform}`);
+    return res.json({ 
+      success: true, 
+      message: `Hosting platform set to ${platform}`,
+      hostingPlatform: process.env.HOSTING_PLATFORM 
+    });
+  } else {
+    return res.status(400).json({ 
+      error: 'Invalid platform', 
+      validOptions: ['render', 'firebase', 'heroku', 'vercel', 'netlify', 'local'] 
+    });
+  }
 });
 
 // API route to manually create the User model if it doesn't exist
@@ -196,6 +231,13 @@ app.get('/api/setup/user-model', async (req, res) => {
     console.error('User model setup failed:', error);
     return res.status(500).json({ error: error.message });
   }
+});
+
+// Add this test route
+app.get('/api/test-cookie-middleware', setCookieMiddleware, (req, res) => {
+    const token = "test-token-123";
+    res.setCookieWithOptions(token);
+    res.json({ message: 'Test cookie set' });
 });
 
 // Connect to the database then start the server

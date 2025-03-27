@@ -5,24 +5,30 @@ import React, { useEffect, useState } from "react";
 import Button from "./Button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/auth.store";
 
 export default function NavigationBar() {
   const router = useRouter();
   const [hasToken, setHasToken] = useState(false);
+  const user = useAuthStore((state: any) => state.user);
+  const signOut = useAuthStore((state: any) => state.signOut);
 
   // Check for token on mount
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    setHasToken(!!token);
-  }, [hasToken]); // run only once on mount
-
+    if (user){
+        setHasToken(true);
+    }else{
+        setHasToken(false);
+    }
+  }, [user]); // run only once on mount
+console.log(hasToken);
   // Temp SignOut handler
   const handleSignOut = () => {
     localStorage.removeItem("token");
     setHasToken(false);
+    signOut();
     router.push("/sign-in");
   };
-
   return (
     <nav className="flex w-full items-center z-50 backdrop-blur-xl fixed top-0 justify-between p-4 border-b border-purple-900">
       <button

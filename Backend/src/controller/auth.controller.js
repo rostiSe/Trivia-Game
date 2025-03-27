@@ -63,36 +63,35 @@ export const getAllUsers = async (req, res) => {
 
 // PUT check if user is signed in api/auth/me
 export const checkUser = async (req, res) => {
-  const token = req.cookies.token;
-  if (!token) return res.status(401).json({ error: 'No token provided' });
+  // Try to get token from multiple sources
+  let token = req.cookies.token;
+  
+  // Log all received cookies for debugging
+  console.log("All cookies received:", req.cookies);
+  
+  // If no token in cookies, check authorization header
+  if (!token && req.headers.authorization) {
+    const authHeader = req.headers.authorization;
+    // Format should be "Bearer [token]"
+    if (authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7, authHeader.length);
+    }
+  }
+  
+  // If still no token, check query parameter (not recommended for production)
+  if (!token && req.query.token) {
+    token = req.query.token;
+  }
+  
+  if (!token) {
+    return res.status(401).json({ 
+      error: 'No token provided', 
+      message: 'Please provide a token in cookies, Authorization header, or query parameter'
+    });
+  }
   
   try {
     const payload = jwt.verify(token, JWT_SECRET);
-    
-    // Check if User model is available in Prisma
-    if (typeof prisma.user === 'undefined') {
-      console.log("Using direct MongoDB for checkUser as Prisma user model is unavailable");
-      
-      // Try direct MongoDB approach
-      const db = await getDirectDbIfNeeded();
-      if (db) {
-        let user;
-        try {
-          user = await db.collection('User').findOne({ _id: new ObjectId(payload.userId) });
-        } catch (err) {
-          console.error("Error finding user by ID:", err);
-          return res.status(404).json({ error: 'User not found' });
-        }
-        
-        if (!user) return res.status(404).json({ error: 'User not found' });
-        
-        // Remove password from response
-        const { password, ...userWithoutPassword } = user;
-        return res.json(userWithoutPassword);
-      }
-      
-      return res.status(500).json({ error: 'User model not available' });
-    }
     
     // Original Prisma approach
     const user = await prisma.user.findUnique({ where: { id: payload.userId } });
@@ -114,40 +113,6 @@ export const signInUser = async (req, res) => {
   }
   
   try {
-    // Check if User model is available in Prisma
-    if (typeof prisma.user === 'undefined') {
-      console.log("Using direct MongoDB for signInUser as Prisma user model is unavailable");
-      
-      // Try direct MongoDB approach
-      const db = await getDirectDbIfNeeded();
-      if (db) {
-        const user = await db.collection('User').findOne({ email: email });
-        
-        if (!user) {
-          return res.status(401).json({ error: 'Invalid credentials' });
-        }
-        
-        const isValid = await bcrypt.compare(password, user.password);
-        if (!isValid) return res.status(401).json({ error: 'Invalid credentials' });
-        
-        const token = jwt.sign({ 
-          userId: user._id.toString(), 
-          email: user.email 
-        }, JWT_SECRET, { expiresIn: '1d' });
-        
-        res.cookie('token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'strict',
-          maxAge: 24 * 60 * 60 * 1000, // 1 day
-        });
-        
-        return res.json({ token });
-      }
-      
-      return res.status(500).json({ error: 'User model not available' });
-    }
-    
     // Original Prisma approach
     const user = await prisma.user.findUnique({
       where: { email: req.body.email }
@@ -161,14 +126,62 @@ export const signInUser = async (req, res) => {
     if (!isValid) return res.status(401).json({ error: 'Invalid credentials' });
     
     const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1d' });
+    res.setCookieWithOptions(token);
+    // Set token in cookie with improved settings for cross-origin
+    console.log("Attempting to set cookie after signin..." + token);
+    
+    // Create cookie options based on environment
+    const cookieOptions = {
+      // httpOnly means the cookie cannot be accessed by JavaScript
+      httpOnly: true,
+      
+      // In production, secure should be true. In development, if not using HTTPS, set to false
+      secure: process.env.NODE_ENV === 'production',
+      
+      // For cross-domain and hosting platforms like Render/Firebase, None is often needed
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      
+      // Cookie expiration
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      
+      // Ensure cookie is available across the site
+      path: '/',
+    };
+    
+    console.log("Using cookie options:", cookieOptions);
+    
+    // // Special handling for Firebase/Render hosting
+    // if (process.env.HOSTING_PLATFORM === 'firebase' || process.env.HOSTING_PLATFORM === 'render') {
+    //   // Firebase and some Render configs require the __session cookie name
+    //   res.cookie('__session', token, cookieOptions);
+    //   console.log("Set __session cookie for Firebase/Render compatibility");
+    // }
+    
+    // Set standard token cookie
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 24 * 60 * 60 * 1000,
+      path: '/',
     });
     
-    return res.json({ token });
+    console.log("Cookie set headers:", res.getHeaders());
+    
+    // Return the token in response body as well for clients that prefer using Authorization header
+    return res.status(200).json({
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name
+      },
+      message: 'Login successful',
+      cookieInfo: {
+        name: 'token',
+        options: cookieOptions
+      }
+    });
   } catch (error) {
     console.error("Sign in error:", error);
     return res.status(500).json({ error: error.message });
@@ -210,7 +223,41 @@ export const signUpUser = async (req, res) => {
         const newUser = await db.collection('User').findOne({ _id: result.insertedId });
         const { password: _, ...userWithoutPassword } = newUser;
         
-        return res.status(201).json(userWithoutPassword);
+        // Create and set token after signup
+        const token = jwt.sign({ 
+          userId: newUser._id.toString(), 
+          email: newUser.email 
+        }, JWT_SECRET, { expiresIn: '1d' });
+        
+        console.log("Attempting to set cookie after signup (MongoDB)...");
+        
+        // Create cookie options based on environment
+        const cookieOptions = {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+          maxAge: 24 * 60 * 60 * 1000,
+          path: '/',
+        };
+        
+        console.log("Using cookie options:", cookieOptions);
+        
+        // Special handling for Firebase/Render hosting
+        if (process.env.HOSTING_PLATFORM === 'firebase' || process.env.HOSTING_PLATFORM === 'render') {
+          res.cookie('__session', token, cookieOptions);
+          console.log("Set __session cookie for Firebase/Render compatibility");
+        }
+        
+        // Set standard token cookie
+        res.cookie('token', token, cookieOptions);
+        
+        console.log("Cookie set headers:", res.getHeaders());
+        
+        return res.status(201).json({
+          ...userWithoutPassword,
+          token,
+          message: 'Signup successful'
+        });
       }
       
       return res.status(500).json({ error: 'User model not available' });
@@ -234,9 +281,53 @@ export const signUpUser = async (req, res) => {
       }
     });
     
-    return res.status(201).json(newUser);
+    // Create and set token after signup
+    const token = jwt.sign({ 
+      userId: newUser.id, 
+      email: newUser.email 
+    }, JWT_SECRET, { expiresIn: '1d' });
+    
+    console.log("Attempting to set cookie after signup (Prisma)...");
+   
+    // Create cookie options based on environment
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 24 * 60 * 60 * 1000,
+      path: '/',
+    };
+    
+    console.log("Using cookie options:", cookieOptions);
+    
+    // Special handling for Firebase/Render hosting
+    if (process.env.HOSTING_PLATFORM === 'firebase' || process.env.HOSTING_PLATFORM === 'render') {
+      res.cookie('__session', token, cookieOptions);
+      console.log("Set __session cookie for Firebase/Render compatibility");
+    }
+    
+    // Set standard token cookie
+    res.cookie('token', token, cookieOptions);
+    
+    console.log("Cookie set headers:", res.getHeaders());
+    
+    // Don't expose the password
+    const { password: _, ...userWithoutPassword } = newUser;
+    
+    return res.status(201).json({
+      ...userWithoutPassword,
+      token,
+      message: 'Signup successful'
+    });
   } catch (error) {
     console.error("Sign up error:", error);
     return res.status(500).json({ error: error.message });
   }
+}
+
+// Sign-Out User api/auth/sign-out
+export const signOutUser = async (req, res) => {
+  res.clearCookie('token');
+  res.clearCookie('__session');
+  return res.status(200).json({ message: 'Sign out successful' });
 }

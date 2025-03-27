@@ -180,7 +180,7 @@ const QuestionScreen = () => {
     );
   }
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl min-h-screen">
+    <div className="container mx-auto px-4 py-14 max-w-4xl min-h-screen">
       <div className="mb-6">
         <ProgressBar
           current={currentQuestionIndex + 1}

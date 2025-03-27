@@ -18,15 +18,16 @@ export default function SaveEl({questions}:{questions: Question}) {
   const [savedQuestion, setSavedQuestion] = useState(false)
     async function saveQuestionToDatabae(){
       try {
-        const response = await fetch('http://localhost:3001/api/questions/save', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/questions/save`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(questions)
+          body: JSON.stringify(questions),
+          credentials: 'include'  // Important for cookie auth
         })
         if (!response.ok) {
-          toast.error('Allready saved')
+          toast.error('Already saved')
         }   else{
           setSavedQuestion(true)
           toast.success('Question saved')
@@ -36,8 +37,8 @@ export default function SaveEl({questions}:{questions: Question}) {
         console.log(data)
 
       } catch (error) {
-
         console.error("Error saving question to database:", error)
+        toast.error("Failed to save question")
       }
      
     }

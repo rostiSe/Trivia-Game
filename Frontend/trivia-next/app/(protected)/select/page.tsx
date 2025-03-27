@@ -28,9 +28,7 @@ const difficulties = [{
 }];
 
 const SelectionScreen = () => {
-  const {
-    setGameOptions
-  } = useGameContext();
+
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number>(Math.floor(Math.random() * 25));
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
@@ -62,13 +60,7 @@ const SelectionScreen = () => {
   
   const handleStartGame = () => {
     if (selectedCategory && selectedDifficulty) {
-      setGameOptions({
-        category: selectedCategory,
-        difficulty: selectedDifficulty,
-        questionCount,
-        id: selectedCategoryId,
-        amount: questionCount
-      });
+      
       const selectedFields= {
         category: selectedCategory,
         difficulty: selectedDifficulty,
