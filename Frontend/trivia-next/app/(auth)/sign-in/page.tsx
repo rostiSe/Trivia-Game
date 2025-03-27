@@ -15,15 +15,6 @@ export default function SignInPage() {
     const [error, setError] = useState("");
     const router = useRouter();
 
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
-
-        const token = localStorage.getItem('token');
-        if (token) {
-            router.replace("/select");
-        }
-    }, [router]);
-
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
