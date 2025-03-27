@@ -14,13 +14,15 @@ export default function SignInPage() {
     const [error, setError] = React.useState("");
     const router = useRouter();
 
-    // Check token only once on mount
+    // Check token only in development
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            router.replace('/select');
+        if (process.env.NODE_ENV === 'development') {
+            const token = localStorage.getItem('token');
+            if (token) {
+                router.replace('/select');
+            }
         }
-    }, []);
+    }, [router]);
 
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();

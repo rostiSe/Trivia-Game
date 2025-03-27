@@ -6,10 +6,10 @@ const router = express.Router();
 
 router.use(setCookieMiddleware);
 
-router.get('/', getAllUsers);
 router.get('/me', checkUser);
-router.get('/sign-out', signOutUser);
+router.get('/users', getAllUsers);
 
+router.post('/sign-out', signOutUser);
 router.post('/sign-in', signInUser);
 router.post('/sign-up', signUpUser);
 

@@ -68,11 +68,22 @@ export const useAuthStore = create<AuthState>((set) => ({
   // Sign out action
   signOut: async () => {
     try {
-      await fetch('/api/auth/sign-out', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/sign-out`, {
         method: 'POST',
         credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
-      set({ user: null });
+      
+      if (response.ok) {
+        // Clear local storage
+        localStorage.removeItem('token');
+        // Clear auth store
+        set({ user: null, error: null });
+      } else {
+        throw new Error('Failed to sign out');
+      }
     } catch (error: any) {
       console.error('Sign out error:', error);
       set({ error: error.message });

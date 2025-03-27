@@ -327,7 +327,17 @@ export const signUpUser = async (req, res) => {
 
 // Sign-Out User api/auth/sign-out
 export const signOutUser = async (req, res) => {
-  res.clearCookie('token');
-  res.clearCookie('__session');
+  const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    path: '/',
+    expires: new Date(0) // Set to past date to clear cookie
+  };
+
+  // Clear both cookie names
+  res.clearCookie('token', cookieOptions);
+  res.clearCookie('__session', cookieOptions);
+
   return res.status(200).json({ message: 'Sign out successful' });
 }
