@@ -39,12 +39,13 @@ export default function SignInPage() {
                 localStorage.setItem("token", data.token);
                 
                 // Use direct navigation
-                window.location.href = '/select';
+                router.replace('/select');
             } else {
                 setError(data.error || "Login failed");
             }
-        } catch (err: any) {
+        } catch (err) {
             console.error("Sign-in error:", err);
+                        // @ts-expect-error
             setError(err.message || "An unexpected error occurred");
         } finally {
             setLoading(false);
