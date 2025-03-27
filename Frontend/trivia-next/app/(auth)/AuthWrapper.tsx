@@ -5,7 +5,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { useEffect } from 'react';
 
 
-// @ts-ignore
+// @ts-expect-error
 export default function AuthWrapper({ userFromServer, children }) {
   const { user, setUser } = useAuthStore();
 
