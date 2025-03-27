@@ -5,30 +5,56 @@ import React, { useEffect, useState } from "react";
 import Button from "./Button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/auth.store";
 
 export default function NavigationBar() {
   const router = useRouter();
-  const [hasToken, setHasToken] = useState(false);
-  const user = useAuthStore((state) => state.user);
-  const signOut = useAuthStore((state) => state.signOut);
-
-  // Check for token on mount
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  // Check authentication status on mount and when localStorage changes
   useEffect(() => {
-    if (user){
-        setHasToken(true);
-    }else{
-        setHasToken(false);
+    const checkAuth = () => {
+      const token = localStorage.getItem('token');
+      setIsLoggedIn(!!token);
+    };
+    
+    // Check initially
+    checkAuth();
+    
+    // Set up event listener for storage changes (for multi-tab support)
+    window.addEventListener('storage', checkAuth);
+    
+    // Clean up
+    return () => window.removeEventListener('storage', checkAuth);
+  }, []);
+
+  // Sign out handler
+  const handleSignOut = async () => {
+    try {
+      // Call the sign-out API
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/sign-out`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      // Clear local storage
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      
+      // Redirect to sign-in
+      window.location.href = '/sign-in';
+    } catch (error) {
+      console.error("Error signing out:", error);
+      
+      // Still clear localStorage and redirect on error
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/sign-in';
     }
-  }, [user]); // run only once on mount
-console.log(hasToken);
-  // Temp SignOut handler
-  const handleSignOut = () => {
-    localStorage.removeItem("token");
-    setHasToken(false);
-    signOut();
-    router.push("/sign-in");
   };
+
   return (
     <nav className="flex w-full items-center z-50 backdrop-blur-xl fixed top-0 justify-between p-4 border-b border-purple-900">
       <button
@@ -39,7 +65,7 @@ console.log(hasToken);
         <p>Back</p>
       </button>
       <div className="flex items-center gap-4">
-        {!hasToken ? (
+        {!isLoggedIn ? (
           <Button
             variant="outline"
             className="flex shadow-none py-2 cursor-pointer items-center justify-center"

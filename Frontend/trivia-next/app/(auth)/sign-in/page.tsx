@@ -4,7 +4,6 @@ import Card from '@/components/design/Card';
 import LoadingButton from '@/components/form/loading-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuthStore } from '@/store/auth.store';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
@@ -19,21 +18,43 @@ export default function SignInPage() {
         e.preventDefault();
         setLoading(true);
         setError("");
-      
-        const success = await useAuthStore.getState().signIn({ email, password });
-      
-        if (success) {
-          router.push("/select");
-        } else {
-          setError(useAuthStore.getState().error || "Login failed");
+
+        try {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/api/auth/sign-in`,
+                {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ email, password }),
+                    credentials: "include",
+                }
+            );
+            
+            const data = await response.json();
+            
+            if (response.ok && data.token) {
+                // Store token in localStorage
+                localStorage.setItem("token", data.token);
+                
+                // Use direct navigation
+                window.location.href = '/select';
+            } else {
+                setError(data.error || "Login failed");
+            }
+        } catch (err: any) {
+            console.error("Sign-in error:", err);
+            setError(err.message || "An unexpected error occurred");
+        } finally {
+            setLoading(false);
         }
-      
-        setLoading(false);
-      };
+    };
 
     return (
         <div className="flex items-center justify-center min-h-screen">
             <Card className="w-full max-w-md p-8">
+                <h1 className="text-2xl font-bold mb-6 text-center">Sign In</h1>
                 <form onSubmit={handleSignIn} className="space-y-6">
                     <div>
                         <Label htmlFor="email">Email</Label>
@@ -43,6 +64,7 @@ export default function SignInPage() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
+                            disabled={loading}
                         />
                     </div>
                     <div>
@@ -53,6 +75,7 @@ export default function SignInPage() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            disabled={loading}
                         />
                     </div>
                     {error && (
