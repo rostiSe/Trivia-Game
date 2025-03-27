@@ -14,7 +14,7 @@ export default function AuthWrapper({ userFromServer, children }) {
     if (!user && userFromServer) {
       setUser(userFromServer);
     }
-  }, [user, setUser]);
+  }, []);
 
   console.log(user);
   console.log(userFromServer);

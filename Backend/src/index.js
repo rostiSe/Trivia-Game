@@ -40,22 +40,13 @@ const app = express();
 
 // CORS + JSON body parser
 // Determine CORS settings based on environment
-const corsOptions = process.env.NODE_ENV === 'production' 
-  ? {
-      origin: [process.env.FRONTEND_URL || 'https://trivia-game-pi5.vercel.app/'],
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
-      exposedHeaders: ['set-cookie']
-    }
-  : {
-      // In development, be permissive to help with debugging
-      origin: true,
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
-      exposedHeaders: ['set-cookie']
-    };
+const corsOptions = {
+  origin: true, // Reflects the request's origin
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['set-cookie'],
+};
 
 console.log('Using CORS settings:', corsOptions);
 app.use(cors(corsOptions));
