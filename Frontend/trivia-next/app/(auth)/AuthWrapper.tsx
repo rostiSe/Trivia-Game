@@ -8,12 +8,7 @@ import { useEffect } from 'react';
 // @ts-expect-error - Zustand store is initialized with a default value
 export default function AuthWrapper({ userFromServer, children }) {
   const { user, setUser } = useAuthStore();
-  const initialize = useAuthStore((state) => state.initialize);
-
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
-
+  console.log(user)
   // Hydrate the Zustand store with the server-provided user
   useEffect(() => {
     if (!user && userFromServer) {

@@ -11,7 +11,6 @@ interface AuthState {
   loading: boolean;
   error: string | null;
   setUser: (user: User | null) => void;
-  initialize: () => void;
   signIn: (credentials: { email: string; password: string }) => Promise<boolean>;
   signOut: () => Promise<void>;
 }
@@ -22,16 +21,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   error: null,
 
   // Initialize Zustand store from localStorage immediately
-  initialize: () => {
-    if (typeof window !== 'undefined') {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        set({ user: JSON.parse(storedUser), loading: false });
-      } else {
-        set({ loading: false });
-      }
-    }
-  },
+ 
 
   setUser: (user: User | null) => {
     if (user) {
