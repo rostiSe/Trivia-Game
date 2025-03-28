@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import NavigationBar from "@/components/design/navigation";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Trivia App",
@@ -16,7 +16,7 @@ export default async function ProtectedLayout({
   // Get all cookies from the request
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
-  
+  const router = useRouter();
   // Make server-side auth check simple and reliable
   try {
     // Call the authentication check endpoint with the cookie header
@@ -26,7 +26,9 @@ export default async function ProtectedLayout({
     });
     console.log(await res.json())
     // If not authenticated, redirect to login
-
+    if (!res.ok) {
+      return router.replace("/sign-in");
+    }
 
     // If authenticated, render the protected layout
     return (
