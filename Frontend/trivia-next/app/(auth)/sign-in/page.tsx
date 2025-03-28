@@ -4,7 +4,6 @@ import Card from '@/components/design/Card';
 import LoadingButton from '@/components/form/loading-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 export default function SignInPage() {
@@ -12,7 +11,6 @@ export default function SignInPage() {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const router = useRouter();
 
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -20,6 +18,7 @@ export default function SignInPage() {
         setError("");
 
         try {
+            console.log("Attempting to sign in...");
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/api/auth/sign-in`,
                 {
@@ -32,20 +31,23 @@ export default function SignInPage() {
                 }
             );
             
+            console.log("Sign-in response status:", response.status);
             const data = await response.json();
+            console.log("Sign-in response data:", data);
             
             if (response.ok && data.token) {
                 // Store token in localStorage
                 localStorage.setItem("token", data.token);
+                console.log("Token saved, redirecting...");
                 
-                // Use direct navigation
-                router.replace('/select');
+                // Use direct navigation instead of Next.js router
+                window.location.href = '/select';
             } else {
                 setError(data.error || "Login failed");
             }
         } catch (err) {
             console.error("Sign-in error:", err);
-                        // @ts-expect-error stupid err
+            // @ts-expect-error stupid err
             setError(err.message || "An unexpected error occurred");
         } finally {
             setLoading(false);
