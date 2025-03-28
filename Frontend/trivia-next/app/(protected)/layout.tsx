@@ -27,11 +27,7 @@ export default async function ProtectedLayout({
       next: { revalidate: 0 } // Don't cache this request
     });
 
-    // IMPORTANT: Check response status before trying to parse JSON
-    if (!res.ok) {
-      console.log("Auth check failed with status:", res.status);
-      return redirect("/sign-in");
-    }
+ 
 
     // Only try to parse JSON if the response was successful
     const userData = await res.json();
