@@ -24,11 +24,9 @@ export default async function ProtectedLayout({
       headers: { cookie: cookieHeader },
       next: { revalidate: 0 } // Don't cache this request
     });
-
+    console.log(await res.json())
     // If not authenticated, redirect to login
-    if (!res.ok) {
-      return redirect("/sign-in");
-    }
+
 
     // If authenticated, render the protected layout
     return (
