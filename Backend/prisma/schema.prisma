@@ -38,9 +38,23 @@ model User {
   draws       Int               @default(0)
   groups      Group[]           @relation(fields: [groupIds], references: [id])
   groupIds    String[]          @db.ObjectId
+
+  friends     Friendship[] @relation("userFriendships")
+  friendOf    Friendship[] @relation("friendFriendships")
+
   sentFriendRequests     FriendRequest[] @relation("SentRequests")
   receivedFriendRequests FriendRequest[] @relation("ReceivedRequests")
   leaderboardEntry       LeaderboardEntry?
+}
+
+model Friendship {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  friendId  String   @db.ObjectId
+  createdAt DateTime @default(now())
+  user      User     @relation("userFriendships", fields: [userId], references: [id])
+  friend    User     @relation("friendFriendships", fields: [friendId], references: [id])
+  @@unique([userId, friendId])
 }
 
 model QuestionOfUser {
