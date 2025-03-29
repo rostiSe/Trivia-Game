@@ -7,6 +7,7 @@ import Card from '@/components/design/Card';
 import { Alert } from '@/components/ui/alert';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { useGameStore } from '@/store/game.store';
 
 interface Category {
   id: string;
@@ -38,6 +39,8 @@ const SelectionScreen = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const router = useRouter();
 
+  const { setDifficulty, setCategory, setQuestionAmount, setCategoryId } = useGameStore();
+
 
 
   // Fetch Categories
@@ -59,22 +62,24 @@ const SelectionScreen = () => {
   
   const handleStartGame = () => {
     if (selectedCategory && selectedDifficulty) {
-      
-      const selectedFields= {
+      setCategory(selectedCategory);
+      setCategoryId(selectedCategoryId);
+      setDifficulty(selectedDifficulty);
+      setQuestionAmount(questionCount);
+  
+      localStorage.setItem('Quiz-Options', JSON.stringify({
         category: selectedCategory,
+        categoryId: selectedCategoryId,
         difficulty: selectedDifficulty,
-        questionCount,
-        id: selectedCategoryId,
-        amount: questionCount
-
-      }
-      localStorage.setItem('Quiz-Options', JSON.stringify(selectedFields));
-      router.push('/quiz')
-
-    }else{
-      setError(true)
+        questionAmount: questionCount
+      }));
+  
+      router.push('/quiz');
+    } else {
+      setError(true);
     }
   };
+  
 
   const variation ={
     hidden: {

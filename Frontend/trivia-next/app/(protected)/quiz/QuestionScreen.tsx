@@ -10,6 +10,7 @@ import { useGameContext } from "@/lib/GameContext.";
 import Link from "next/link";
 import SaveEl from "../select/save";
 import {decode} from 'html-entities';
+import { useGameStore } from "@/store/game.store";
 
 
 
@@ -22,6 +23,8 @@ type Question = {
 
 const QuestionScreen = () => {
   const { gameOptions } = useGameContext();
+  const { category, difficulty, questionAmount, categoryId } = useGameStore();
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -35,7 +38,7 @@ const QuestionScreen = () => {
     async function fetchQuestions() {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/trivia?category=${gameOptions.id}&difficulty=${gameOptions.difficulty}&amount=${gameOptions.amount}&type=multiple`
+          `${process.env.NEXT_PUBLIC_API_URL}/api/trivia?category=${categoryId}&difficulty=${difficulty}&amount=${questionAmount}&type=multiple`
         );
         const data = await response.json();
         console.log('Fetched data:', data);
@@ -67,6 +70,19 @@ const QuestionScreen = () => {
       setAnswers(mergedAnswers);
     }
   }, [questions]);
+
+  useEffect(() => {
+      const storedOptions = localStorage.getItem('Quiz-Options');
+      if (storedOptions) {
+        const options = JSON.parse(storedOptions);
+        useGameStore.setState({
+          category: options.category,
+          categoryId: options.categoryId,
+          difficulty: options.difficulty,
+          questionAmount: options.questionAmount
+        });
+      }
+  }, [category, difficulty, categoryId]);
   
   function shuffleArray<T>(array: T[]): void {
     for (let i = array.length - 1; i > 0; i--) {
@@ -123,7 +139,7 @@ const QuestionScreen = () => {
       setGameOver(true);
     }
   };
-
+console.log(gameOptions)
   
   if (!questions || questions.length === 0) {
     return <div>Loading...</div>;
@@ -192,11 +208,11 @@ const QuestionScreen = () => {
           <div>
             <span className="text-sm text-indigo-300">
               Category:{" "}
-              <span className="font-medium">{gameOptions.category}</span>
+              <span className="font-medium">{category}</span>
             </span>
             <div className="text-sm text-indigo-300">
               Difficulty:{" "}
-              <span className="font-medium">{gameOptions.difficulty}</span>
+              <span className="font-medium">{difficulty}</span>
             </div>
           </div>
           <div className="flex items-center gap-4">
