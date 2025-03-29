@@ -1,3 +1,5 @@
+import prisma from "../prismaClient";
+
 export const sendRequest = async (req, res) => {
   try {
     const { receiverId, senderId } = req.body;
