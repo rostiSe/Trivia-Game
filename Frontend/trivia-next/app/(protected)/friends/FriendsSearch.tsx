@@ -3,8 +3,7 @@
 import Button from "@/components/design/Button";
 import Card from "@/components/design/Card";
 import { Input } from "@/components/ui/input";
-import { get } from "http";
-import { BotIcon, LucideMailWarning, PlayIcon, SendIcon } from "lucide-react";
+import {  LucideMailWarning, PlayIcon, SendIcon } from "lucide-react";
 import React from "react";
 
 export default function FriendsSearch({ users }: any) {
@@ -17,7 +16,7 @@ export default function FriendsSearch({ users }: any) {
   const [friends, setFriends] = React.useState([]);
 
   React.useEffect(() => {
-    async function getSentRequests(id: Number) {
+    async function getSentRequests(id: number) {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/friends/requests/sent/${id}`
       );
@@ -26,7 +25,7 @@ export default function FriendsSearch({ users }: any) {
       console.log(data);
       return data;
     }
-    async function getReceivedRequests(id: Number) {
+    async function getReceivedRequests(id: number) {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/friends/requests/received/${id}`
       );
@@ -34,7 +33,7 @@ export default function FriendsSearch({ users }: any) {
       setReceivedRequests(data);
       return data;
     }
-    async function getFriends(id: Number) {
+    async function getFriends(id: number) {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/friends/${id}`
       );
@@ -81,7 +80,7 @@ export default function FriendsSearch({ users }: any) {
     );
   };
 
-  const handleSubmit = async (receiverId: Number) => {
+  const handleSubmit = async (receiverId: number) => {
     const senderId = userId;
     try {
       const response = await fetch(
@@ -107,7 +106,7 @@ export default function FriendsSearch({ users }: any) {
   };
 
   const handleAccept = async (
-    requestId: Number,
+    requestId: number,
     senderId: any,
     receiverId: any
   ) => {

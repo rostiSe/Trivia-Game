@@ -1,4 +1,3 @@
-import Card from '@/components/design/Card'
 import React from 'react'
 import FriendsSearch from './FriendsSearch'
 
