@@ -6,6 +6,7 @@ import questionRoutes from './routes/question.routes.js';
 import triviaRoutes from './routes/trivia.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
+import friendsRoutes from './routes/friends.routes.js';
 import cookieParser from 'cookie-parser';
 import prisma, { testConnection } from './prismaClient.js';
 import bcrypt from 'bcrypt';
@@ -101,9 +102,10 @@ app.get('/', (req, res) => {
 
 // Use our question routes
 app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/trivia', triviaRoutes);
+app.use('/api/friends', friendsRoutes);
 
 // Simple cookie test endpoint  
   

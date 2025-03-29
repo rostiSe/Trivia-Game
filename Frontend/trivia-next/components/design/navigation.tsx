@@ -56,7 +56,7 @@ export default function NavigationBar() {
   };
 
   return (
-    <nav className="flex w-full items-center z-50 backdrop-blur-xl fixed top-0 justify-between p-4 border-b border-purple-900">
+    <nav className="flex w-full items-center z-50 backdrop-blur-xl fixed top-0 left-0 justify-between p-4 border-b border-purple-900">
       <button
         onClick={() => router.back()}
         className="flex items-center gap-2 cursor-pointer text-purple-200 hover:text-pink-600 transition-colors"

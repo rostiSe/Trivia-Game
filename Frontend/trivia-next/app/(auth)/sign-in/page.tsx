@@ -91,6 +91,14 @@ export default function SignInPage() {
                     >
                         Sign In
                     </LoadingButton>
+                    <div>
+                        <p className="text-sm">
+                            Don't have an account?{" "}
+                            <a href="/sign-up" className="text-blue-500">
+                                Sign Up
+                            </a>
+                        </p>
+                    </div>
                 </form>
             </Card>
         </div>
