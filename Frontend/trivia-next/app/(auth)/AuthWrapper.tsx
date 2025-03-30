@@ -1,8 +1,7 @@
-// app/protected/AuthWrapper.tsx
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
-import {  useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -10,28 +9,28 @@ interface AuthWrapperProps {
   children: React.ReactNode;
   userFromServer?: any; // Replace with the actual type if known
 }
+
 export default function AuthWrapper({ userFromServer, children }: AuthWrapperProps) {
   const { user, setUser, initialize } = useAuthStore();
   const [isInitialized, setIsInitialized] = useState(false);
   const router = useRouter();
-
+  
+  // Run once on component mount
   useEffect(() => {
-    initialize()
-  },[initialize])
-  // First, handle server-provided user data if available
-  useEffect(() => {
-    if (userFromServer) {
-      console.log("Wrapper user data:", userFromServer);
+    // Safely initialize store (client-side only)
+    initialize();
+    
+    // If we have server-side user data, set it immediately
+    if (userFromServer && userFromServer.id) {
+      console.log("Setting user from server data:", userFromServer);
       setUser(userFromServer);
-      setIsInitialized(true);
-    } else {
-      router.replace('/sign-in')
-      
     }
-  }, [userFromServer, setUser]);
-
-  // Show a nice loading state
-  if (!isInitialized || (!user && userFromServer)) {
+    
+    setIsInitialized(true);
+  }, [initialize, setUser, userFromServer]);
+  
+  // If we're still initializing, show loading state
+  if (!isInitialized) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -40,12 +39,13 @@ export default function AuthWrapper({ userFromServer, children }: AuthWrapperPro
     );
   }
 
-  // For protected routes that require AuthWrapper with server data
-  // If there's no user and we've already tried to initialize, show nothing
-  // The layout.tsx will handle the redirect
-  if (!user && userFromServer) {
-    return null;
+  // If we're initialized and have either user from store or server, render children
+  if (user || userFromServer) {
+    return <>{children}</>;
   }
-
-  return <>{children}</>;
+  
+  // If we're initialized but have no user data, redirect to sign-in
+  // This is a fallback - normally the redirect happens in layout.tsx
+  router.replace('/sign-in');
+  return null;
 }

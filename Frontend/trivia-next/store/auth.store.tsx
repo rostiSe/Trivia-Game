@@ -22,26 +22,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loading: true,
   error: null,
 
-  // Safe initialize function that checks for window
-  initialize: () => {
-    if (typeof window === 'undefined') {
-      set({ loading: false });
-      return;
-    }
-    
-    try {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        const userData = JSON.parse(storedUser);
-        set({ user: userData, loading: false });
-      } else {
-        set({ loading: false });
-      }
-    } catch (error) {
-      console.error('Error initializing auth state:', error);
+// Initialize function that's safe for SSR
+initialize: () => {
+  if (typeof window === 'undefined') {
+    set({ loading: false });
+    return;
+  }
+  
+  try {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const userData = JSON.parse(storedUser);
+      set({ user: userData, loading: false });
+    } else {
       set({ loading: false });
     }
-  },
+  } catch (error) {
+    console.error('Error initializing auth state:', error);
+    set({ loading: false });
+  }
+},
 
   // Safe localStorage functions in setUser
   setUser: (user: User | null) => {
