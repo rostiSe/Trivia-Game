@@ -63,6 +63,9 @@ export const getAllUsers = async (req, res) => {
 
 // PUT check if user is signed in api/auth/me
 export const checkUser = async (req, res) => {
+  // Log headers for debugging
+  console.log("Request headers:", req.headers);
+  
   // Try to get token from multiple sources
   let token = req.cookies.token;
   
@@ -78,7 +81,10 @@ export const checkUser = async (req, res) => {
     }
   }
   
-
+  // Last resort: check for token in query parameters (not recommended for production)
+  if (!token && req.query.token) {
+    token = req.query.token;
+  }
   
   if (!token) {
     return res.status(401).json({ 
@@ -90,7 +96,6 @@ export const checkUser = async (req, res) => {
   try {
     const payload = jwt.verify(token, JWT_SECRET);
     
-    // Original Prisma approach
     const user = await prisma.user.findUnique({ where: { id: payload.userId } });
     if (!user) return res.status(404).json({ error: 'User not found' });
     
@@ -98,7 +103,7 @@ export const checkUser = async (req, res) => {
     return res.json(userWithoutPassword);
   } catch (error) {
     console.error("Token verification error:", error);
-    return res.status(401).json({ error: 'Invalid token' });
+    return res.status(401).json({ error: 'Invalid token', details: error.message });
   }
 }
 

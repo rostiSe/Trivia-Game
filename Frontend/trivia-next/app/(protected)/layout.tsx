@@ -31,7 +31,11 @@ export default async function ProtectedLayout({
      
     console.log("Auth check response:", res);
     // Only try to parse JSON if the response was successful
-    const userData = await res.json();
+    if (!res.ok){
+      console.error("Authentication check failed:", res.statusText);
+      return redirect("/sign-in");
+    }const userData = await res.json();
+
     
     console.log("Auth check succeeded, user data:", userData);
 
