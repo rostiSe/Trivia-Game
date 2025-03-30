@@ -50,6 +50,8 @@ export default function AuthWrapper({ userFromServer, token, children }: AuthWra
     initAuth();
   }, [userFromServer, token, setUser]);
 
+  console.log(user)
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
