@@ -17,13 +17,12 @@ export default async function ProtectedLayout({
   children: React.ReactNode;
 }>) {
   // Get the token cookie
-  const cookieStore = cookies();
-  const token = (await cookieStore).get("token")?.value;
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value
   
   // If no token exists in cookies, redirect to sign-in
   if (!token) {
-    console.log("No token found in cookies, redirecting");
-    return redirect("/");
+    console.log("No token found in cookies, redirecting:" + token);
   }
   
   try {
