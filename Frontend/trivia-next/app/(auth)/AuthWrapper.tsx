@@ -32,7 +32,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
       try {
         console.log("AuthWrapper: Verifying token client-side...");
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
-          method: 'POST', // Or whatever your /me endpoint uses
+          method: 'GET', // Or whatever your /me endpoint uses
           headers: {
             // Authorization header might be needed if backend prefers it,
             // but the cookie should also be sent if credentials: include is used
