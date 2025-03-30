@@ -22,8 +22,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loading: true,
   error: null,
 
-  // Initialize auth state from localStorage
+  // Safe initialize function that checks for window
   initialize: () => {
+    if (typeof window === 'undefined') {
+      set({ loading: false });
+      return;
+    }
+    
     try {
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
@@ -38,11 +43,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  // Set user data in store and localStorage
+  // Safe localStorage functions in setUser
   setUser: (user: User | null) => {
+    if (typeof window === 'undefined') {
+      set({ user, loading: false });
+      return;
+    }
+
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
-      set({ user: user, loading: false });
     } else {
       localStorage.removeItem('user');
       localStorage.removeItem('token');
@@ -50,8 +59,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ user, loading: false });
   },
 
-  // Check if the user is authenticated with the server
+  // Safe localStorage in checkUser
   checkUser: async () => {
+    if (typeof window === 'undefined') {
+      set({ loading: false });
+      return false;
+    }
+
     try {
       set({ loading: true });
       
@@ -89,7 +103,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  // Sign in user
+  // Similar localStorage safety checks for signIn
   signIn: async ({ email, password }) => {
     try {
       set({ loading: true, error: null });
@@ -107,12 +121,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const data = await res.json();
       
       if (res.ok && data.token) {
-        localStorage.setItem('token', data.token);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('token', data.token);
+          
+          if (data.user) {
+            localStorage.setItem('user', JSON.stringify(data.user));
+          }
+        }
         
-        if (data.user) {
-          localStorage.setItem('user', JSON.stringify(data.user));
-          set({ user: data.user, error: null, loading: false });
-        } else {
+        set({ user: data.user, error: null, loading: false });
+        
+        if (!data.user) {
           // If user data is missing, try to fetch it
           await get().checkUser();
         }
@@ -135,7 +154,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  // Sign out user
+  // Safe localStorage in signOut
   signOut: async () => {
     try {
       set({ loading: true });
@@ -149,16 +168,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
       });
       
-      // Always clear local storage regardless of response
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+      
       set({ user: null, loading: false, error: null });
     } catch (error: any) {
       console.error('Sign out error:', error);
       
-      // Still clear auth state even if API call fails
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+      
       set({ 
         user: null, 
         error: 'Error during sign out, but you have been signed out locally',

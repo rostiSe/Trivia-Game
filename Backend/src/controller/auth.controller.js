@@ -78,10 +78,7 @@ export const checkUser = async (req, res) => {
     }
   }
   
-  // If still no token, check query parameter (not recommended for production)
-  if (!token && req.query.token) {
-    token = req.query.token;
-  }
+
   
   if (!token) {
     return res.status(401).json({ 

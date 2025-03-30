@@ -2,17 +2,22 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
-import { useEffect, useState } from 'react';
+import {  useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface AuthWrapperProps {
   children: React.ReactNode;
   userFromServer?: any; // Replace with the actual type if known
 }
 export default function AuthWrapper({ userFromServer, children }: AuthWrapperProps) {
-  const { user, setUser } = useAuthStore();
+  const { user, setUser, initialize } = useAuthStore();
   const [isInitialized, setIsInitialized] = useState(false);
+  const router = useRouter();
 
+  useEffect(() => {
+    initialize()
+  },[initialize])
   // First, handle server-provided user data if available
   useEffect(() => {
     if (userFromServer) {
@@ -20,20 +25,8 @@ export default function AuthWrapper({ userFromServer, children }: AuthWrapperPro
       setUser(userFromServer);
       setIsInitialized(true);
     } else {
-      // If no server data, check if we have stored user data
-      const storedUser = localStorage.getItem('user');
+      router.replace('/sign-in')
       
-      if (storedUser) {
-        try {
-          const userData = JSON.parse(storedUser);
-          setUser(userData);
-        } catch (e) {
-          console.error('Failed to parse stored user data', e);
-          localStorage.removeItem('user');
-        }
-      }
-      
-      setIsInitialized(true);
     }
   }, [userFromServer, setUser]);
 
