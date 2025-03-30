@@ -3,34 +3,54 @@
 import { useAuthStore } from '@/store/auth.store';
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 
 interface AuthWrapperProps {
   children: React.ReactNode;
-  userFromServer?: any; // Replace with the actual type if known
+  userFromServer?: any;
+  token?: string;
 }
 
-export default function AuthWrapper({ userFromServer, children }: AuthWrapperProps) {
-  const { user, setUser, initialize } = useAuthStore();
-  const [isInitialized, setIsInitialized] = useState(false);
-  const router = useRouter();
-  
-  // Run once on component mount
+export default function AuthWrapper({ userFromServer, token, children }: AuthWrapperProps) {
+  const { user, setUser } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    // Safely initialize store (client-side only)
-    initialize();
-    
-    // If we have server-side user data, set it immediately
-    if (userFromServer && userFromServer.id) {
-      console.log("Setting user from server data:", userFromServer);
-      setUser(userFromServer);
+    // Function to handle auth initialization
+    async function initAuth() {
+      // If we have server-provided user data, use it
+      if (userFromServer && token) {
+        console.log("Using server-provided user data:", userFromServer);
+        
+        // Store token in localStorage for client-side requests
+        localStorage.setItem('token', token);
+        
+        // Update auth store with user data
+        setUser(userFromServer);
+        setIsLoading(false);
+        return;
+      }
+      
+      // Otherwise, check if we have a stored token/user
+      const storedToken = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+      
+      if (storedUser && storedToken) {
+        try {
+          setUser(JSON.parse(storedUser));
+          setIsLoading(false);
+        } catch (e) {
+          console.error("Error parsing stored user data", e);
+          setIsLoading(false);
+        }
+      } else {
+        setIsLoading(false);
+      }
     }
     
-    setIsInitialized(true);
-  }, [initialize, setUser, userFromServer]);
-  
-  // If we're still initializing, show loading state
-  if (!isInitialized) {
+    initAuth();
+  }, [userFromServer, token, setUser]);
+
+  if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -39,13 +59,5 @@ export default function AuthWrapper({ userFromServer, children }: AuthWrapperPro
     );
   }
 
-  // If we're initialized and have either user from store or server, render children
-  if (user || userFromServer) {
-    return <>{children}</>;
-  }
-  
-  // If we're initialized but have no user data, redirect to sign-in
-  // This is a fallback - normally the redirect happens in layout.tsx
-  router.replace('/sign-in');
-  return null;
+  return <>{children}</>;
 }
