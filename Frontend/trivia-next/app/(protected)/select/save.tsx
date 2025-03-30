@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/store/auth.store';
 import { SaveIcon } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
-import { set } from 'react-hook-form';
 import { toast } from 'sonner';
 
 interface Question {
