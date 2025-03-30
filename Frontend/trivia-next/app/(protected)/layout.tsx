@@ -23,7 +23,7 @@ export default async function ProtectedLayout({
   // If no token exists in cookies, redirect to sign-in
   if (!token) {
     console.log("No token found in cookies, redirecting");
-    return redirect("/sign-in");
+    return redirect("/");
   }
   
   try {
