@@ -19,7 +19,7 @@ export default async function ProtectedLayout({
   // Get all cookies from the request
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
-  
+  console.log("Cookie header:", cookieHeader);
   
   // Make server-side auth check simple and reliable
   try {
@@ -29,7 +29,7 @@ export default async function ProtectedLayout({
       next: { revalidate: 0 } // Don't cache this request
     });
      
-
+    console.log("Auth check response:", res);
     // Only try to parse JSON if the response was successful
     const userData = await res.json();
     

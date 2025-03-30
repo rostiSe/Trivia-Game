@@ -21,7 +21,7 @@ export default function AuthWrapper({ userFromServer, children }: AuthWrapperPro
   // First, handle server-provided user data if available
   useEffect(() => {
     if (userFromServer) {
-      console.log("Server user data:", userFromServer);
+      console.log("Wrapper user data:", userFromServer);
       setUser(userFromServer);
       setIsInitialized(true);
     } else {
