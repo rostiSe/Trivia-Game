@@ -11,6 +11,7 @@ import Link from "next/link";
 import SaveEl from "../select/save";
 import {decode} from 'html-entities';
 import { useGameStore } from "@/store/game.store";
+import { useAuthStore } from "@/store/auth.store";
 
 
 
@@ -33,6 +34,7 @@ const QuestionScreen = () => {
   const [gameOver, setGameOver] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<string[] >([]);
+  const { user } = useAuthStore();
   // Fetch trivia questions
   useEffect(() => {
     async function fetchQuestions() {
@@ -52,7 +54,7 @@ const QuestionScreen = () => {
       }
     }
     fetchQuestions();
-
+    console.log(user)
   }, []);
 
   useEffect(() => {
@@ -217,7 +219,6 @@ console.log(gameOptions)
           </div>
           <div className="flex items-center gap-4">
           <SaveEl  questions={questions[currentQuestionIndex]} />
-
           
           <div className="flex items-center bg-indigo-900/80 px-3 py-1 rounded-lg">
             <ClockIcon size={18} className="mr-1 text-yellow-400" />

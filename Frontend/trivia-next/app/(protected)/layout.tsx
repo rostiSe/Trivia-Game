@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import Loading from "./loading";
+import AuthWrapper from "../(auth)/AuthWrapper";
 
 export const metadata: Metadata = {
   title: "Trivia App",
@@ -19,6 +20,7 @@ export default async function ProtectedLayout({
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
   
+  
   // Make server-side auth check simple and reliable
   try {
     // Call the authentication check endpoint with the cookie header
@@ -26,20 +28,22 @@ export default async function ProtectedLayout({
       headers: { cookie: cookieHeader },
       next: { revalidate: 0 } // Don't cache this request
     });
-
- 
+     
 
     // Only try to parse JSON if the response was successful
     const userData = await res.json();
+    
     console.log("Auth check succeeded, user data:", userData);
 
     // If authenticated, render the protected layout
     return (
       <>
         <NavigationBar />
+        <AuthWrapper userFromServer={userData}>
         <Suspense fallback={<Loading />}>
           {children}
         </Suspense>
+        </AuthWrapper>
       </>
     );
   } catch (error) {

@@ -12,6 +12,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { PopoverClose } from "@radix-ui/react-popover";
+import { useAuthStore } from "@/store/auth.store";
 
 interface Question {
   id: string; // If you're using Mongo ObjectId strings
@@ -34,21 +35,33 @@ export default function QuestionsPage() {
   // If null, not editing anything. Otherwise, store the question + form fields
   const [editingQuestion, setEditingQuestion] =
     useState<EditingQuestion | null>(null);
+    const { user } = useAuthStore();
 
-  useEffect(() => {
-    async function fetchQuestions() {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/questions`
-        );
-        const data = await response.json();
-        setQuestions(data);
-      } catch (error) {
-        console.error("Error fetching questions:", error);
+    useEffect(() => {
+      async function fetchQuestions() {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/questions/liked/${user?.id}`
+          );
+          const data = await response.json();
+          
+          // Transform the data to match your component's expected format
+          const formattedQuestions = data.map((item: { question: { id: any; difficulty: any; question: any; correctAnswer: any; incorrectAnswers: any; category: any; }; }) => ({
+            id: item.question.id,
+            difficulty: item.question.difficulty,
+            question: item.question.question,
+            correctAnswer: item.question.correctAnswer,
+            incorrectAnswers: item.question.incorrectAnswers,
+            category: item.question.category
+          }));
+          
+          setQuestions(formattedQuestions);
+        } catch (error) {
+          console.error("Error fetching questions:", error);
+        }
       }
-    }
-    fetchQuestions();
-  }, []);
+      fetchQuestions();
+    }, [user?.id]); // Added user?.id as a dependency
 
   async function deleteQuestion(id: string) {
     // Mark this question as "loading"
@@ -156,6 +169,8 @@ export default function QuestionsPage() {
       console.error("Error saving question to database:", error);
     }
   }
+    console.log(questions)
+
   return (
     <div className="container mx-auto px-4 py-10 max-w-4xl">
       <div className="text-center mb-10">
@@ -170,7 +185,6 @@ export default function QuestionsPage() {
         {questions.map((question) => {
           const isDeleting = loadingIds.includes(question.id);
           const isEditing = editingQuestion?.id === question.id;
-          console.log(question);
 
           // We'll build a local "answers" array to display either from editingQuestion or the question object
           const answersInView = isEditing

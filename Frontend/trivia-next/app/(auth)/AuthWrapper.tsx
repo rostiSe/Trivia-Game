@@ -7,8 +7,8 @@ import { Loader2 } from 'lucide-react';
 
 interface AuthWrapperProps {
   children: React.ReactNode;
+  userFromServer?: any; // Replace with the actual type if known
 }
-// @ts-expect-error Pls just work
 export default function AuthWrapper({ userFromServer, children }: AuthWrapperProps) {
   const { user, setUser } = useAuthStore();
   const [isInitialized, setIsInitialized] = useState(false);
@@ -16,6 +16,7 @@ export default function AuthWrapper({ userFromServer, children }: AuthWrapperPro
   // First, handle server-provided user data if available
   useEffect(() => {
     if (userFromServer) {
+      console.log("Server user data:", userFromServer);
       setUser(userFromServer);
       setIsInitialized(true);
     } else {

@@ -8,6 +8,7 @@ import { Alert } from '@/components/ui/alert';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/store/game.store';
+import { useAuthStore } from '@/store/auth.store';
 
 interface Category {
   id: string;
@@ -38,10 +39,12 @@ const SelectionScreen = () => {
   const [loading, setLoading] = useState(true);
   const [showDropdown, setShowDropdown] = useState(false);
   const router = useRouter();
+  const { user } = useAuthStore();
 
   const { setDifficulty, setCategory, setQuestionAmount, setCategoryId } = useGameStore();
 
 
+console.log(user)
 
   // Fetch Categories
   useEffect(() => {
@@ -58,6 +61,8 @@ const SelectionScreen = () => {
       }
     }
     fetchCategories()
+    console.log("use from zustand:" + user)
+
   }, []);
   
   const handleStartGame = () => {
