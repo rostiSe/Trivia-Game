@@ -35,10 +35,7 @@ export default async function ProtectedLayout({
     
     console.log("Auth check succeeded, user data:", userData);
 
-    if (!userData || !userData.id) {
-      console.log("User not authenticated, redirecting to sign-in page.");
-      return redirect("/sign-in");
-    }
+
     // If authenticated, render the protected layout
     return (
       <>
