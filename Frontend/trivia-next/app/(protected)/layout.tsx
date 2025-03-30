@@ -17,7 +17,7 @@ export default async function ProtectedLayout({
     return (
       <>
         <NavigationBar />
-        <AuthWrapper >
+        <AuthWrapper>
           <Suspense fallback={<Loading />}>
             {children}
           </Suspense>
