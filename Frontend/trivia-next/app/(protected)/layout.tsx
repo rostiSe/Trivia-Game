@@ -10,34 +10,57 @@ export const metadata: Metadata = {
   title: "Trivia App",
   description: "A fun trivia application",
 };
-
 export default async function ProtectedLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Get the token cookie
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value
-  
-  // If no token exists in cookies, redirect to sign-in
+  const cookieStore = await cookies(); // No await needed here for App Router
+
+  // --- LOGGING START ---
+  console.log("--- ProtectedLayout Server-Side Execution ---");
+  const allCookies = cookieStore.getAll(); // Get all cookies as an array of { name, value }
+  console.log("All cookies RECEIVED BY SERVER:", JSON.stringify(allCookies));
+  // --- LOGGING END ---
+
+  const tokenCookie = cookieStore.get("token"); // Get the specific cookie object
+  const token = tokenCookie?.value; // Extract the value
+
+  console.log("Attempting to read 'token' cookie. Found object:", tokenCookie ? 'Yes' : 'No');
+  console.log("Value extracted:", token ? "[Token Value Present]" : "[No Token Value]");
+
   if (!token) {
-    console.log("No token found in cookies, redirecting:" + token);
+    console.log("No token value found in cookies, redirecting to /sign-in.");
+    // Make sure any previous redirects inside the try block are removed/handled here.
+    return redirect("/sign-in");
   }
-  
+
+  // Token found, proceed with verification...
   try {
-    // Make the auth check with the token
+    console.log("Token found, proceeding to fetch /api/auth/me");
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
-      headers: { 
+      headers: {
         "Authorization": `Bearer ${token}`
       },
-      cache: "no-store" 
+      cache: "no-store"
     });
-     
 
-    
+    if (!res.ok) {
+      console.error("Auth check API call failed:", res.status, res.statusText);
+      // Attempt to read error body
+      let errorBody = 'Could not read error body';
+      try {
+          errorBody = await res.text(); // Use text() first in case it's not JSON
+          console.error("Auth check API error response body:", errorBody);
+      } catch {}
+      // Clear the potentially invalid cookie? This is tricky from Server Component.
+      // Best practice is often to let the redirect to /sign-in handle login again.
+      return redirect("/sign-in");
+    }
+
     const userData = await res.json();
-    
+    console.log("Auth check successful.");
+
     return (
       <>
         <NavigationBar />
@@ -49,7 +72,7 @@ export default async function ProtectedLayout({
       </>
     );
   } catch (error) {
-    console.error("Auth check error:", error);
+    console.error("Error during auth check fetch/processing:", error);
     return redirect("/sign-in");
   }
 }
