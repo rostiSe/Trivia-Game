@@ -35,10 +35,7 @@ export default async function ProtectedLayout({
       cache: "no-store" 
     });
      
-    if (!res.ok) {
-      console.error("Auth check failed:", res.status);
-      return redirect("/sign-in");
-    }
+
     
     const userData = await res.json();
     
