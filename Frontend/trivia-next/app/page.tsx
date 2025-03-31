@@ -1,6 +1,6 @@
 import Button from "@/components/design/Button";
 import NavigationBar from "@/components/design/navigation";
-import { Play, Save, Users } from "lucide-react";
+import { BookIcon, Play, Save, Users } from "lucide-react";
 import Link from "next/link";
 
 export default function App() {
@@ -25,6 +25,11 @@ export default function App() {
         <Button variant="outline" className="w-full  max-w-[20rem] mt-3">
           <Link className="" href="/friends">
               <Users className="inline"/> Friends
+          </Link>
+        </Button>
+        <Button variant="outline" className="w-full  max-w-[20rem] mt-3">
+          <Link className="" href="/stats">
+              <BookIcon className="inline"/> Stats
           </Link>
         </Button>
       </main>

@@ -133,6 +133,7 @@ export default function FriendsSearch({ users }: any) {
     }
   };
   console.log(friends);
+  console.log(users)
   return (
     <div className="mt-16 pb-8 space-y-5 w-[85vw] md:w-[70vw]">
       <div className="flex items-center justify-between gap-2">
@@ -146,8 +147,8 @@ export default function FriendsSearch({ users }: any) {
               <Card key={friend.id}>
                 <div className="flex justify-between">
                   <div>
-                    <p>{friend.friend.name}</p>
-                    <p className="text-sm">{friend.friend.email}</p>
+                    <p>{friend.friend.id === userId ? friend.user.name : friend.friend.name}</p>
+                    <p className="text-sm">{friend.friend.id === userId ? friend.user.email : friend.friend.email}</p>
                   </div>
                   <Button className="p-2" variant="outline">
                     <PlayIcon className="size-5" />

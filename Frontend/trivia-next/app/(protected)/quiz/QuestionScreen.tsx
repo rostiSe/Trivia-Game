@@ -9,11 +9,9 @@ import AnswerTile from "@/components/design/AnswerTile";
 import { useGameContext } from "@/lib/GameContext.";
 import Link from "next/link";
 import SaveEl from "../select/save";
-import {decode} from 'html-entities';
+import { decode } from "html-entities";
 import { useGameStore } from "@/store/game.store";
 import { useAuthStore } from "@/store/auth.store";
-
-
 
 type Question = {
   id: number;
@@ -24,7 +22,8 @@ type Question = {
 
 const QuestionScreen = () => {
   const { gameOptions } = useGameContext();
-  const { category, difficulty, questionAmount, categoryId } = useGameStore();
+  const { category, difficulty, questionAmount, categoryId, addPoint, addMatch } =
+    useGameStore();
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -33,7 +32,7 @@ const QuestionScreen = () => {
   const [timeLeft, setTimeLeft] = useState(30);
   const [gameOver, setGameOver] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [answers, setAnswers] = useState<string[] >([]);
+  const [answers, setAnswers] = useState<string[]>([]);
   const { user } = useAuthStore();
   // Fetch trivia questions
   useEffect(() => {
@@ -43,10 +42,9 @@ const QuestionScreen = () => {
           `${process.env.NEXT_PUBLIC_API_URL}/api/trivia?category=${categoryId}&difficulty=${difficulty}&amount=${questionAmount}&type=multiple`
         );
         const data = await response.json();
-        console.log('Fetched data:', data);
-        if(data){
+        console.log("Fetched data:", data);
+        if (data) {
           setQuestions(data);
-
         }
       } catch (error) {
         console.error("Error fetching questions:", error);
@@ -54,7 +52,7 @@ const QuestionScreen = () => {
       }
     }
     fetchQuestions();
-    console.log(user)
+    console.log(user);
   }, []);
 
   useEffect(() => {
@@ -62,30 +60,30 @@ const QuestionScreen = () => {
       // Merge correct + incorrect answers
       const mergedAnswers = [
         ...questions[0].incorrect_answers,
-        questions[0].correct_answer
+        questions[0].correct_answer,
       ];
-  
+
       // Shuffle them in-place
       shuffleArray(mergedAnswers);
-  
+
       // Now update state with the shuffled answers
       setAnswers(mergedAnswers);
     }
   }, [questions]);
 
   useEffect(() => {
-      const storedOptions = localStorage.getItem('Quiz-Options');
-      if (storedOptions) {
-        const options = JSON.parse(storedOptions);
-        useGameStore.setState({
-          category: options.category,
-          categoryId: options.categoryId,
-          difficulty: options.difficulty,
-          questionAmount: options.questionAmount
-        });
-      }
+    const storedOptions = localStorage.getItem("Quiz-Options");
+    if (storedOptions) {
+      const options = JSON.parse(storedOptions);
+      useGameStore.setState({
+        category: options.category,
+        categoryId: options.categoryId,
+        difficulty: options.difficulty,
+        questionAmount: options.questionAmount,
+      });
+    }
   }, [category, difficulty, categoryId]);
-  
+
   function shuffleArray<T>(array: T[]): void {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -93,7 +91,6 @@ const QuestionScreen = () => {
       [array[i], array[j]] = [array[j], array[i]];
     }
   }
-  
 
   // Timer effect
   useEffect(() => {
@@ -119,6 +116,7 @@ const QuestionScreen = () => {
     setShowResult(true);
     if (selectedAnswer === questions[currentQuestionIndex].correct_answer) {
       setScore((prev) => prev + 1);
+      addPoint(user?.id);
     }
   };
   const handleNextQuestion = () => {
@@ -132,17 +130,19 @@ const QuestionScreen = () => {
         ...questions[nextIndex].incorrect_answers,
         questions[nextIndex].correct_answer,
       ];
-  
+
       console.log("Next question index:", nextIndex, questions[nextIndex]);
       console.log("Before shuffle:", mergedAnswers);
       shuffleArray(mergedAnswers);
-      console.log("After shuffle:", mergedAnswers);  
-      setAnswers(mergedAnswers);    } else {
+      console.log("After shuffle:", mergedAnswers);
+      setAnswers(mergedAnswers);
+    } else {
       setGameOver(true);
+      addMatch(user?.id);
     }
   };
-console.log(gameOptions)
-  
+  console.log(gameOptions);
+
   if (!questions || questions.length === 0) {
     return <div>Loading...</div>;
   }
@@ -175,10 +175,9 @@ console.log(gameOptions)
               className="flex items-center justify-center"
             >
               <Link href="/">
-                          <HomeIcon size={18} className="mr-2" />
-              Main Menu
-
-            </Link>
+                <HomeIcon size={18} className="mr-2" />
+                Main Menu
+              </Link>
             </Button>
             <Button
               onClick={() => {
@@ -209,27 +208,25 @@ console.log(gameOptions)
         <div className="flex justify-between items-start mb-4">
           <div>
             <span className="text-sm text-indigo-300">
-              Category:{" "}
-              <span className="font-medium">{category}</span>
+              Category: <span className="font-medium">{category}</span>
             </span>
             <div className="text-sm text-indigo-300">
-              Difficulty:{" "}
-              <span className="font-medium">{difficulty}</span>
+              Difficulty: <span className="font-medium">{difficulty}</span>
             </div>
           </div>
           <div className="flex items-center gap-4">
-          <SaveEl  questions={questions[currentQuestionIndex]} />
-          
-          <div className="flex items-center bg-indigo-900/80 px-3 py-1 rounded-lg">
-            <ClockIcon size={18} className="mr-1 text-yellow-400" />
-            <span
-              className={`font-mono font-bold ${
-                timeLeft < 10 ? "text-red-400" : "text-yellow-400"
-              }`}
-            >
-              {timeLeft.toString().padStart(2, "0")}
-            </span>
-          </div>
+            <SaveEl questions={questions[currentQuestionIndex]} />
+
+            <div className="flex items-center bg-indigo-900/80 px-3 py-1 rounded-lg">
+              <ClockIcon size={18} className="mr-1 text-yellow-400" />
+              <span
+                className={`font-mono font-bold ${
+                  timeLeft < 10 ? "text-red-400" : "text-yellow-400"
+                }`}
+              >
+                {timeLeft.toString().padStart(2, "0")}
+              </span>
+            </div>
           </div>
         </div>
         <h2 className="text-2xl font-semibold mb-4">
@@ -243,7 +240,9 @@ console.log(gameOptions)
             text={decode(answer)}
             selected={selectedAnswer === answer}
             correct={
-              showResult ? answer === questions[currentQuestionIndex].correct_answer : null
+              showResult
+                ? answer === questions[currentQuestionIndex].correct_answer
+                : null
             }
             onClick={() => handleAnswerSelect(answer)}
             disabled={showResult}
@@ -252,20 +251,19 @@ console.log(gameOptions)
       </div>
       <div className="flex justify-between">
         <div className="flex flex-col md:flex-row items-center gap-4">
-        <Button
-          variant="outline"
-          className="flex items-center"
-        >
-          <Link className="flex items-center" href="/select">
-          <HomeIcon size={18} className="mr-2" />
-          Quit
-          </Link>
-        </Button>
-
+          <Button variant="outline" className="flex items-center">
+            <Link className="flex items-center" href="/select">
+              <HomeIcon size={18} className="mr-2" />
+              Quit
+            </Link>
+          </Button>
         </div>
-                  
+
         {showResult ? (
-          <Button className="flex h-fit items-center gap-2" onClick={handleNextQuestion}>
+          <Button
+            className="flex h-fit items-center gap-2"
+            onClick={handleNextQuestion}
+          >
             {currentQuestionIndex < questions.length - 1 ? (
               <>
                 Next Question
@@ -276,7 +274,11 @@ console.log(gameOptions)
             )}
           </Button>
         ) : (
-          <Button className="h-fit" onClick={handleCheckAnswer} disabled={!selectedAnswer}>
+          <Button
+            className="h-fit"
+            onClick={handleCheckAnswer}
+            disabled={!selectedAnswer}
+          >
             Check Answer
           </Button>
         )}
